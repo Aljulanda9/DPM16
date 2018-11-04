@@ -41,6 +41,7 @@ public class dpm16 {
 	public static final int[] lowerLeftCorner = {3, 3};
 	public static final int[] upperRightCorner = {6,5 };
 	
+	//competition parameters
 	private int Red_UR_x;
 	private int Red_UR_y;
 	private int Red_LL_x;
