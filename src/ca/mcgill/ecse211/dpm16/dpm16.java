@@ -40,6 +40,37 @@ public class dpm16 {
 	//rectangle parameters
 	public static final int[] lowerLeftCorner = {3, 3};
 	public static final int[] upperRightCorner = {6,5 };
+	
+	private int Red_UR_x;
+	private int Red_UR_y;
+	private int Red_LL_x;
+	private int Red_LL_y;
+	
+	private int Green_UR_x;
+	private int Green_UR_y;
+	private int Green_LL_x;
+	private int Green_LL_y;
+	
+	private int BRR_UR_x;
+	private int BRR_UR_y;
+	private int BRR_LL_x;
+	private int BRR_LL_y;
+	
+	private int BRG_UR_x;
+	private int BRG_UR_y;
+	private int BRG_LL_x;
+	private int BRG_LL_y;
+	
+	private int TR_UR_x;
+	private int TR_UR_y;
+	private int TR_LL_x;
+	private int TR_LL_y;
+	
+	
+	private int TG_UR_x;
+	private int TG_UR_y;
+	private int TG_LL_x;
+	private int TG_LL_y;
 	public static ObjectLocalizer oLocal = null;
 	public static void main(String[] args) throws OdometerExceptions {
 		int buttonChoice;
