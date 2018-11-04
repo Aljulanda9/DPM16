@@ -71,14 +71,19 @@ public class Navigation implements Runnable {
 		}
 		// implemented this for loop so that navigation will work for any number of points
 
-		int waypoints[][] = new int[][] { {dpm16.lowerLeftCorner[0], dpm16.lowerLeftCorner[1]}, {dpm16.lowerLeftCorner[0], dpm16.upperRightCorner[1]}, {dpm16.upperRightCorner[0], dpm16.upperRightCorner[1]}, { dpm16.upperRightCorner[0], dpm16.lowerLeftCorner[1] }, { dpm16.lowerLeftCorner[0], dpm16.lowerLeftCorner[1] },{dpm16.lowerLeftCorner[0]+1, dpm16.lowerLeftCorner[1]}, {dpm16.lowerLeftCorner[0]+1, dpm16.upperRightCorner[1]},{dpm16.upperRightCorner[0], dpm16.upperRightCorner[1]}};
+		//assuming we are red
+		//make it go in straight lines to the bridge. Stop half a tile away from the bridge
+		travelTo((double)dpm16.BRR_LL_x - 0.5, odometer.getXYT()[1], true);
+		travelTo(odometer.getXYT()[0], (double)dpm16.BRR_LL_y - 0.5, true);
+		/*int waypoints[][] = new int[][] { {dpm16.lowerLeftCorner[0], dpm16.lowerLeftCorner[1]}, {dpm16.lowerLeftCorner[0], dpm16.upperRightCorner[1]}, {dpm16.upperRightCorner[0], dpm16.upperRightCorner[1]}, { dpm16.upperRightCorner[0], dpm16.lowerLeftCorner[1] }, { dpm16.lowerLeftCorner[0], dpm16.lowerLeftCorner[1] },{dpm16.lowerLeftCorner[0]+1, dpm16.lowerLeftCorner[1]}, {dpm16.lowerLeftCorner[0]+1, dpm16.upperRightCorner[1]},{dpm16.upperRightCorner[0], dpm16.upperRightCorner[1]}};
 
 		while(i<waypoints.length) {
+			
 			if (i>0) {dpm16.inSquare=true;}
 			travelTo(waypoints[i][0], waypoints[i][1],true);
 			if(i==0) {Sound.beep();}
 			i++;
-		}
+		}*/
 	}
 
 
