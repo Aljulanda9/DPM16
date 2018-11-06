@@ -73,8 +73,8 @@ public class Navigation implements Runnable {
 
 		//assuming we are red
 		//make it go in straight lines to the bridge. Stop half a tile away from the bridge
-		travelTo((double)dpm16.BRR_LL_x - 0.5, odometer.getXYT()[1], true);
-		travelTo(odometer.getXYT()[0], (double)dpm16.BRR_LL_y - 0.5, true);
+		travelTo((double)MainController.BRR_LL_x - 0.5, odometer.getXYT()[1], true);
+		travelTo(odometer.getXYT()[0], (double)MainController.BRR_LL_y - 0.5, true);
 		/*int waypoints[][] = new int[][] { {dpm16.lowerLeftCorner[0], dpm16.lowerLeftCorner[1]}, {dpm16.lowerLeftCorner[0], dpm16.upperRightCorner[1]}, {dpm16.upperRightCorner[0], dpm16.upperRightCorner[1]}, { dpm16.upperRightCorner[0], dpm16.lowerLeftCorner[1] }, { dpm16.lowerLeftCorner[0], dpm16.lowerLeftCorner[1] },{dpm16.lowerLeftCorner[0]+1, dpm16.lowerLeftCorner[1]}, {dpm16.lowerLeftCorner[0]+1, dpm16.upperRightCorner[1]},{dpm16.upperRightCorner[0], dpm16.upperRightCorner[1]}};
 
 		while(i<waypoints.length) {
@@ -120,19 +120,12 @@ public class Navigation implements Runnable {
 		}
 
 
-		// go
+		
 		leftMotor.setSpeed(FORWARD_SPEED);
 		rightMotor.setSpeed(FORWARD_SPEED);
 		leftMotor.rotate(convertDistance(WHEEL_RAD, len), true);
 		rightMotor.rotate(convertDistance(WHEEL_RAD, len), true);
-		while(isNavigating()) {
-			if(dpm16.inSquare) {
-
-				dpm16.oLocal.processUSData();
-
-			}
-		}
-
+		
 
 	}
 
@@ -204,17 +197,17 @@ public class Navigation implements Runnable {
 
 	public void turnCW(long degree) {
 		leftMotor.rotate(
-				convertAngle(dpm16.WHEEL_RADIUS, dpm16.TRACK, degree), true);
+				convertAngle(MainController.WHEEL_RADIUS, MainController.TRACK, degree), true);
 		rightMotor.rotate(
-				-convertAngle(dpm16.WHEEL_RADIUS, dpm16.TRACK, degree), true);
+				-convertAngle(MainController.WHEEL_RADIUS, MainController.TRACK, degree), true);
 	}
 
 
 	public void turnCW2(long degree) {
 		leftMotor.rotate(
-				convertAngle(dpm16.WHEEL_RADIUS, dpm16.TRACK, degree), true);
+				convertAngle(MainController.WHEEL_RADIUS, MainController.TRACK, degree), true);
 		rightMotor.rotate(
-				-convertAngle(dpm16.WHEEL_RADIUS, dpm16.TRACK, degree), false);
+				-convertAngle(MainController.WHEEL_RADIUS, MainController.TRACK, degree), false);
 	}
 	/** turns the robot counterclockwise to a certaina angle
 	 * @param degree is and in degrees you want to turn to
@@ -222,16 +215,16 @@ public class Navigation implements Runnable {
 	 */
 	public void turnCCW(long degree) {
 		leftMotor.rotate(
-				-convertAngle(dpm16.WHEEL_RADIUS, dpm16.TRACK, degree), true);
+				-convertAngle(MainController.WHEEL_RADIUS, MainController.TRACK, degree), true);
 		rightMotor.rotate(
-				convertAngle(dpm16.WHEEL_RADIUS, dpm16.TRACK, degree), true);
+				convertAngle(MainController.WHEEL_RADIUS, MainController.TRACK, degree), true);
 	}
 	/** moves the robot forward a certain distance with the current heading
 	 * @distance distance you want covered
 	 */
 	public void advance(long distance) {
-		leftMotor.rotate(convertDistance(dpm16.WHEEL_RADIUS, distance), true);
-		rightMotor.rotate(convertDistance(dpm16.WHEEL_RADIUS, distance), false);
+		leftMotor.rotate(convertDistance(MainController.WHEEL_RADIUS, distance), true);
+		rightMotor.rotate(convertDistance(MainController.WHEEL_RADIUS, distance), false);
 	}
 
 	/*

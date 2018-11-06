@@ -14,10 +14,12 @@ import lejos.hardware.sensor.EV3UltrasonicSensor;
 import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
 
-/*
- * Main class for Lab5.
+/**The main class that starts the motors, sensors and the localization process.
+ * After localization it starts the navigation process which in turn, starts 
+ * the ring and color detection then call the grabber class to the Grab the ring.
+ * @author Reem Madkour
  */
-public class dpm16 {
+public class MainController {
 
 
 	private static final Port usPort = LocalEV3.get().getPort("S3");
@@ -26,6 +28,8 @@ public class dpm16 {
 			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
 	private static final EV3LargeRegulatedMotor rightMotor =
 			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
+	private static final EV3LargeRegulatedMotor rampMotor =
+			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
 	private static final EV3LargeRegulatedMotor sensorMotor =  new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
 
 	//color to be found
@@ -72,7 +76,7 @@ public class dpm16 {
 	private int TG_UR_y;
 	private int TG_LL_x;
 	private int TG_LL_y;
-	public static ObjectLocalizer oLocal = null;
+	//public static ObjectLocalizer oLocal = null;
 	public static void main(String[] args) throws OdometerExceptions {
 		int buttonChoice;
 
@@ -113,19 +117,22 @@ public class dpm16 {
 		Thread odoThread = new Thread(odometer);
 		odoThread.start();
 		Navigation navigation =
-				new Navigation(odometer, leftMotor, rightMotor, sensorMotor, dpm16.TRACK, dpm16.WHEEL_RADIUS);
+				new Navigation(odometer, leftMotor, rightMotor, sensorMotor, MainController.TRACK, MainController.WHEEL_RADIUS);
 
 
-		oLocal = new ObjectLocalizer(usSensor, usData, leftMotor, rightMotor,odometer, navigation);
+		Grabber grabber = new Grabber(rampMotor);
+		//oLocal = new ObjectLocalizer(usSensor, usData, leftMotor, rightMotor,odometer, navigation);
 
+		RingDetection ringDetection =
+				new RingDetection(odometer, leftMotor, rightMotor, sensorMotor, MainController.TRACK, MainController.WHEEL_RADIUS);
 		UltrasonicLocalizer ultrasoniclocal;
 		if (buttonChoice == Button.ID_LEFT) {
 			/*
 			 * First part of DEMO: classify colors.
 			 */
-			ColorClassification coloring = new ColorClassification(colorSensor, usSensor, usData, t);
+			//ColorClassification coloring = new ColorClassification(colorSensor, usSensor, usData, t);
 			t.clear();
-			coloring.run();
+			//coloring.run();
 
 			ultrasoniclocal =
 					new UltrasonicLocalizer(
@@ -159,7 +166,13 @@ public class dpm16 {
 				new LightLocalizer(odometer, colorSensor, colorData, navigation, leftMotor, rightMotor);
 		ll.localize();
 
-
+		grabber.rest();
+		
+		ringDetection.run();
+		
+		grabber.rest();
+		
+		
 		while (Button.waitForAnyPress() != Button.ID_ENTER) ;
 		System.exit(0);
 	}

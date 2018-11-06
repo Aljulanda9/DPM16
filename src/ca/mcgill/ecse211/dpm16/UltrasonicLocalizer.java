@@ -10,7 +10,9 @@ import lejos.utility.Delay;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
-
+/**This class localizes the robot in the starting corner using the ultrasonic sensor
+ * 
+ */
 
 public class UltrasonicLocalizer {
   private static final int ROTATE_SPEED = 100;
@@ -114,7 +116,7 @@ public class UltrasonicLocalizer {
     navigation.turnCW(360);
 
     // this takes care of checking if a falling edge has been crossed to assign it to alpha
-    while (odometer.getXYT()[2] < dpm16.TAU) {
+    while (odometer.getXYT()[2] < MainController.TAU) {
       if (fallingEdgeCaught()) {
     	
         resetMotor();
@@ -167,7 +169,7 @@ public class UltrasonicLocalizer {
     navigation.turnCW(360);
 
     // this takes care of checking if a rising edge has been crossed to assign it to alpha
-    while (odometer.getXYT()[2] < dpm16.TAU) {
+    while (odometer.getXYT()[2] < MainController.TAU) {
       if (risingEdgeCaught()) {
         resetMotor();
         alpha = odometer.getXYT()[2];

@@ -2,13 +2,13 @@ package ca.mcgill.ecse211.dpm16;
 
 import java.util.Arrays;
 
+import lejos.hardware.Sound;
 import lejos.hardware.sensor.EV3ColorSensor;
 import lejos.robotics.SampleProvider;
 
-/*
- * ColorDetector class has a similar function as ColorClassification. However, ColorClassification is
- * put in a separate class to to be used for the first part of the demo. Also, ColorDetector only detects the color
- * and not the object.
+
+/**This class is used to determine the color of the detected ring.
+ * @author Aljulanda
  */
 
 public class ColorDetector{
@@ -57,11 +57,13 @@ public class ColorDetector{
 		this.cSensor = cSensor;
 	}
 	
-	/*
-	 * @param: color: the color that is being searched
-	 * The class returns true if that color has been found
+	/**
+	 * The method returns the number corresponding to each ring as in the project specification document.
+	 * 1 for blue, 2 for green, 3 for yellow and 4 for orange. The method also beeps according to the number 
+	 * of the ring.
+	 * @return the number of the found ring
 	 */
-	public boolean detect(String color) {
+	public int detect() {
 
 		cSensor.setFloodlight(true);
 		SampleProvider csColors = cSensor.getRGBMode();
@@ -91,22 +93,32 @@ public class ColorDetector{
 
 			//return true if list[0] is the required color
 			
-			if(list[0] == Blue && "Blue".equals(color)) {
-				return true;
+			if(list[0] == Blue) {
+				Sound.beep();
+				return 1;
 			}
 			
-			if(list[0] == Green && "Green".equals(color)) {
-				return true;
+			if(list[0] == Green) {
+				Sound.beep();
+				Sound.beep();
+				return 2;
 			}
 			
-			if(list[0] == Yellow && "Yellow".equals(color)) {
-				return true;
+			if(list[0] == Yellow) {
+				Sound.beep();
+				Sound.beep();
+				Sound.beep();
+				return 3;
 			}
 			
-			if(list[0] == Orange && "Orange".equals(color)) {
-				return true;
+			if(list[0] == Orange) {
+				Sound.beep();
+				Sound.beep();
+				Sound.beep();
+				Sound.beep();
+				return 4;
 			}
-			return false;
+			return 0;
 		}
 
 	}

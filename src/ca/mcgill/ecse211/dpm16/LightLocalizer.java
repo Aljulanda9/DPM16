@@ -1,20 +1,22 @@
 package ca.mcgill.ecse211.dpm16;
 
-import lejos.hardware.Button;
 import lejos.hardware.Sound;
-import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.sensor.EV3ColorSensor;
-import lejos.utility.Delay;
 
 import java.util.ArrayList;
 
+/**
+ * This class localizes the robot in the starting corner using the light sensor.
+ * @author Reem
+ *
+ */
 public class LightLocalizer {
   
-  private static final int ROTATE_SPEED = 120;
+  private static final int ROTATE_SPEED = 100;
   private static final long FREQUENCY = 10;
   private static final double D = 2;
-  private static final double TILE_SIZE = 30.48;
+
   ArrayList<Double> readingsArr = new ArrayList<>();
   ArrayList<Double> thetas = new ArrayList<>();
   private Odometer odometer;
@@ -56,10 +58,9 @@ public class LightLocalizer {
   public void localize() {
     
     gotoEstimatedOrigin();
-   
-    /**startTime = System.currentTimeMillis();
-    navigation.turnCW(375);
-    while (odometer.getXYT()[2] < 375) {
+    startTime = System.currentTimeMillis();
+    navigation.turnCW(360);
+    while (odometer.getXYT()[2] < 360) {
       thisColor = getFilteredData();
       if (firstLine) {
         prevColor = thisColor;
@@ -70,6 +71,7 @@ public class LightLocalizer {
       //difference between readings
       difference = thisColor - prevColor;
       prevColor = thisColor;
+
       // add difference to array to be compared later
       lastNValueAdd(difference);
       if (pastline()) { //if comparison mthod returns that there is a black line, add that and its angle
@@ -79,6 +81,7 @@ public class LightLocalizer {
         }
       }
     }
+
     //getting angles
     y1 = thetas.get(0);
     x1 = thetas.get(1);
@@ -88,89 +91,15 @@ public class LightLocalizer {
     //the light sensor's path with the y-axis/x-axis is theta calculated by subtracting both from each other
     double xOffset = -D * Math.cos((y2 - y1) / 2);
     double yOffset = -D * Math.abs(Math.cos((x2 - x1) / 2));
+
     // corrrect the odometer readings
     odometer.setX(xOffset);
     odometer.setY(yOffset);
+
     // travel to 0,0 using navigation class methods
     navigation.turnTo(0);
     navigation.travelTo(0, 0,false);
-  //localizaton ends
-  **/
-    int buttonChoice;
-    while (Button.waitForAnyPress() != Button.ID_ENTER) ;
-
-        odometer.setX(1.0*TILE_SIZE);
-		odometer.setY(1.0*TILE_SIZE);
-		//navigation.turnCW(90);
-		odometer.setTheta(0.0);
-		leftMotor.resetTachoCount();
-		rightMotor.resetTachoCount();
-		Delay.msDelay(5000);
-		 odometer.setX(1.0*TILE_SIZE);
-			odometer.setY(1.0*TILE_SIZE);
-			odometer.setTheta(0.0);
-			//navigation.turnCW(90);
-			odometer.setTheta(0.0);
-		//odometer.setTheta(0.0);
-		//navigation.counter_X = 1;
-		//navigator.counter_Y = 1;
-    /**}
-    else if(dpm16.startingCorner == 1) {
-		// Face Forward
-	//	navigation.turnTo(90);
-		
-		odometer.setX(7.0*TILESIZE);
-		odometer.setY(1.0*TILESIZE);
-		odometer.setTheta(270);
-		//navigator.counter_X = 7;
-		//navigator.counter_Y = 1;
-    }
-    else if(dpm16.startingCorner == 2) {
-		odometer.setX(7.0*TILESIZE);
-		odometer.setY(7.0*TILESIZE);
-		odometer.setTheta(180.0);
-		//navigator.counter_X = 7;
-		//navigator.counter_Y = 7;
-    }
-    else {
-		// Face Forward
-	//	navigation.turnTo(90);
-		
-		odometer.setX(1.0*TILESIZE);
-		odometer.setY(7.0*TILESIZE);
-		odometer.setTheta(90.0);
-		//navigator.counter_X = 1;
-		//navigator.counter_Y = 7;
-    }  **/
-   
-    navigation.rotateSensorMotor();
-    
-    navigation.run();
-    //						1,2
- /**  navigation.travelTo(dpm16.lowerLeftCorner[0], dpm16.lowerLeftCorner[1],true);
-   
  
-  odometer.setX(dpm16.lowerLeftCorner[0]*TILE_SIZE);
-   odometer.setY(dpm16.lowerLeftCorner[1]*TILE_SIZE);
-  
-   dpm16.inSquare=true;
-    navigation.travelTo(dpm16.lowerLeftCorner[0], dpm16.upperRightCorner[1],true);
-    odometer.setX(dpm16.lowerLeftCorner[0]*TILE_SIZE);
-    odometer.setY(dpm16.upperRightCorner[1]*TILE_SIZE);
-    //Delay.msDelay(20000);
-    navigation.travelTo(dpm16.upperRightCorner[0], dpm16.upperRightCorner[1],true);
-    odometer.setX(dpm16.upperRightCorner[0]*TILE_SIZE);
-    odometer.setY(dpm16.upperRightCorner[1]*TILE_SIZE);
-    //Delay.msDelay(20000);
-    navigation.travelTo(dpm16.upperRightCorner[0], dpm16.lowerLeftCorner[1],true);
-    odometer.setX(dpm16.upperRightCorner[0]*TILE_SIZE);
-    odometer.setY(dpm16.lowerLeftCorner[1]*TILE_SIZE);
-    //Delay.msDelay(20000);
-    navigation.travelTo(dpm16.lowerLeftCorner[0], dpm16.lowerLeftCorner[1],true);
-    odometer.setX(dpm16.lowerLeftCorner[0]*TILE_SIZE);
-    odometer.setY(dpm16.lowerLeftCorner[1]*TILE_SIZE);
-dpm16.inSquare=false;
-*/
   }
 
   /** get reading from light sensor, manually synchronized for accuracy */
@@ -242,7 +171,7 @@ dpm16.inSquare=false;
    * chance of catching all the lines
    */
   public void gotoEstimatedOrigin() {
-    navigation.turnTo(dpm16.TAU / 8);
+    navigation.turnTo(MainController.TAU / 8);
     navigation.advance(15);
     navigation.turnTo(0);
   }
