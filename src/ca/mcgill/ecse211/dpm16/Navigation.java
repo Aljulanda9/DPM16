@@ -1,237 +1,172 @@
 package ca.mcgill.ecse211.dpm16;
-import lejos.hardware.sensor.*;
-import lejos.hardware.ev3.LocalEV3;
+
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
-import lejos.hardware.motor.EV3MediumRegulatedMotor;
-import lejos.hardware.port.Port;
-import lejos.robotics.SampleProvider;
 
-import lejos.hardware.Button;
-import lejos.hardware.Sound;
+public class Navigation extends Thread{
 
-/**creates a class to start the navigation
- * @author reem madkour and usaid barlas
-
- */
-
-public class Navigation implements Runnable {
-
+	private Odometer odo;
 	private EV3LargeRegulatedMotor leftMotor;
 	private EV3LargeRegulatedMotor rightMotor;
-	private EV3LargeRegulatedMotor usMotor;
+	private boolean isNavigating;
+	private double[][] waypoints;
 
-	private final double TRACK;
-	private final double WHEEL_RAD;
-	public static final double TILE_SIZE=30.48;;
-	public static final int FORWARD_SPEED = 120;
-	private static final int ROTATE_SPEED = 120;
-	private final int US_ROTATION = 270; //constant for the US sensor rotation when bang bang starts/stops
+	private static final double TRACK = MainController.TRACK;
+	private static final double WHEELRAD = MainController.WHEEL_RADIUS;
 
+	private static final int FORWARD_SPEED =250;
+	private static final int ROTATE_SPEED = 70;
 
-	double dx, dy, dt;
+	private static final double GRID_SIZE = 30.48;
 
-	public int i = 0;
-	public Odometer odometer;
-	//private OdometerData odoData;
-
-
-	/** creates an instance of the navigation class
-	 * @param leftmotor, rightmotor: motors passed from the lab2 class
-	 * @param TRACK is the distance between the wheels
-	 * @param WHEEL_RAD is the radius of the wheel
-	 *
-	 */
-	public Navigation(Odometer odometer,EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, EV3LargeRegulatedMotor sensorMotor,
-			final double TRACK, final double WHEEL_RAD) { // constructor
-		this.odometer = odometer;
+	public Navigation(Odometer odo,EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, double[][] waypoints) {
+		this.odo = odo;
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
-		//odoData = OdometerData.getOdometerData();
-		//odometer.setXYT(0 , 0 , 0);
-		this.TRACK = TRACK;
-		this.WHEEL_RAD = WHEEL_RAD;
-		this.usMotor = sensorMotor;
-		usMotor.resetTachoCount();
+		this.isNavigating = true;
+		this.waypoints = waypoints;
 	}
 
-
-
-
 	public void run() {
-		for (EV3LargeRegulatedMotor motor : new EV3LargeRegulatedMotor[] {leftMotor, rightMotor}) {
-			motor.stop();
-			motor.setAcceleration(200);  // reduced the acceleration to make it smooth
-		}
-		// wait 5 seconds
 		try {
 			Thread.sleep(2000);
-		} catch (InterruptedException e) {
+		}
+		catch(InterruptedException e) {
 			// there is nothing to be done here because it is not expected that
 			// the odometer will be interrupted by another thread
 		}
-		// implemented this for loop so that navigation will work for any number of points
-
-		//assuming we are red
-		//make it go in straight lines to the bridge. Stop half a tile away from the bridge
-		
-		/*int waypoints[][] = new int[][] { {dpm16.lowerLeftCorner[0], dpm16.lowerLeftCorner[1]}, {dpm16.lowerLeftCorner[0], dpm16.upperRightCorner[1]}, {dpm16.upperRightCorner[0], dpm16.upperRightCorner[1]}, { dpm16.upperRightCorner[0], dpm16.lowerLeftCorner[1] }, { dpm16.lowerLeftCorner[0], dpm16.lowerLeftCorner[1] },{dpm16.lowerLeftCorner[0]+1, dpm16.lowerLeftCorner[1]}, {dpm16.lowerLeftCorner[0]+1, dpm16.upperRightCorner[1]},{dpm16.upperRightCorner[0], dpm16.upperRightCorner[1]}};
-
-		while(i<waypoints.length) {
-			
-			if (i>0) {dpm16.inSquare=true;}
-			travelTo(waypoints[i][0], waypoints[i][1],true);
-			if(i==0) {Sound.beep();}
-			i++;
-		}*/
+		for (int i = 0; i<waypoints.length;i++) {
+			travelTo(waypoints[i][0], waypoints[i][1]);
+		}
 	}
 
-
-
-	private static double odoAngle = 0;
 	/**
 	 * Let the robot travel to the specified destination
 	 * @param x The x value of the destination
 	 * @param y The y value of the destination
-	 * @param withTurn If 
 	 */
-	void travelTo(double x, double y,boolean withTurn) {
-		double calcTheta = 0, len = 0, deltaX = 0, deltaY = 0;
+	public void travelTo(double x, double y) {
+		
+		this.isNavigating = true;
 
+		double currentX = odo.getXYT()[0];
+		double currentY = odo.getXYT()[1];
+		// The unit length in the actual world is 30.48cm, while the unit length in our program is 1cm
+		// For example, when we need to head to the point (1,0) in the actual world, we actually need to reach (30.48*1, 30.48*0)
+		// We need to convert the reading from the odometer using the actual world's measurement convention 
+		currentX = (int)Math.round(currentX/GRID_SIZE);
+		currentY = (int)Math.round(currentY/GRID_SIZE);
 
-		odoAngle = odometer.getXYT()[2];
+		// Calculate the distance between the robot's current position and the destination
+		double distance = Math.sqrt( Math.pow( ( x - currentX ), 2) + Math.pow( ( y - currentY ),2) );
+		distance = distance * GRID_SIZE;
 
-		deltaX = x*TILE_SIZE- odometer.getXYT()[0];;
-		deltaY = y*TILE_SIZE - odometer.getXYT()[1];
+		double newTheta = 0.0; // This is the heading that the robot should have in order to reach the destination
+		
+		// This is the angle between the x-/y-axis and the line that both the current position and the destination are on
+		double alpha = Math.toDegrees( Math.atan( Math.abs(x - currentX ) / Math.abs( y - currentY ) ) ); 
 
-		len = Math.hypot(Math.abs(deltaX), Math.abs(deltaY));
-
-		//get angle up to 180
-		calcTheta = Math.toDegrees(Math.atan2(deltaX, deltaY));
-
-		//if result is negative subtract it from 360 to get the positive
-		if (calcTheta < 0)
-			calcTheta = 360 - Math.abs(calcTheta);
-
-		// turn to the found angle
-		if(withTurn) {
-
-			turnTo(calcTheta);
+		// Calculate the new heading using the robot's (x,y,theta) convention
+		if (x==currentX) {
+			if (y-currentY<0) {
+				newTheta = 180;
+			}
+			else if (y-currentY>0) {
+				newTheta = 0;
+			}
+		}
+		else if (y==currentY) {
+			if (x-currentX<0) {
+				newTheta = 270;
+			}
+			else if (x-currentX>0) {
+				newTheta = 90;
+			}	
+		}
+		else if ( (x-currentX)>0 && (y-currentY)>0 ) {
+			newTheta = alpha;
+		}
+		else if ( (x-currentX)>0 && (y-currentY)<0 ) {
+			newTheta = 180 - alpha;
+		}
+		else if ( (x-currentX)<0 && (y-currentY)>0 ) {
+			newTheta = 360 - alpha;
+		}
+		else if ( (x-currentX)<0 && (y-currentY)<0 ) {
+			newTheta = 180 + alpha;
 		}
 
-
 		
+		// Let the robot rotate to have the correct heading to reach the destination
+		//turnTo(newTheta);
+
+		// Let the robot move to the destination by specifying the distance to it 
 		leftMotor.setSpeed(FORWARD_SPEED);
 		rightMotor.setSpeed(FORWARD_SPEED);
-		leftMotor.rotate(convertDistance(WHEEL_RAD, len), true);
-		rightMotor.rotate(convertDistance(WHEEL_RAD, len), false);
-		
-		
+		leftMotor.rotate(convertDistance(WHEELRAD, distance), true);
+		rightMotor.rotate(convertDistance(WHEELRAD, distance), false);
 
 	}
 
-	/** changes heading of the robot to the given angle
-	 * @param theta : angle needed to turn to
+	/**
+	 * Let the robot get to the specified heading by turning a minimal rotation angle
+	 * @param newTheta The heading that the robot needs to rotate to
 	 */
-	void turnTo(double theta) {
-		boolean turnLeft = false; //to do the minimal turn
-		double deltaAngle = 0;
-		// get the delta angle
-		odoAngle=odometer.getXYT()[2];
-		deltaAngle = theta - odoAngle;
+	public void turnTo(double newTheta) {
 
-		// if the delta angle is negative find the equivalent positive
-		if (deltaAngle < 0) {
-			deltaAngle = 360 - Math.abs(deltaAngle);
+		// Calculate how much the robot needs to rotate from its current heading to the specified heading
+		double theta = newTheta - odo.getXYT()[2];
+		
+		// Calculate the "minimal" angle to rotate
+		// Positive angle: angle to rotate clockwise; Negative angle: angle to rotate counter-clockwise
+		// If the absolute value of the angle to rotate is > 180, then the angle to rotate in the opposite direction must be smaller
+		// We can +/- 360 to find that smaller angle
+		
+		if ( theta > 180) {
+			theta = theta - 360;
 		}
-
-		// Check if angle is the minimal or not
-		if (deltaAngle > 180) {
-			turnLeft = true;
-			deltaAngle = 360 - Math.abs(deltaAngle);
-		} else {
-			turnLeft = false;
+		else if ( theta < -180 ) {
+			theta = theta + 360;
 		}
+		
 
-		// set to rotation speed
 		leftMotor.setSpeed(ROTATE_SPEED);
 		rightMotor.setSpeed(ROTATE_SPEED);
 
-		//turn robot to direction we chose
-		if (turnLeft) {
-			leftMotor.rotate(-convertAngle(WHEEL_RAD, TRACK, deltaAngle), true);
-			rightMotor.rotate(convertAngle(WHEEL_RAD, TRACK, deltaAngle), false);
-		} else {
-			leftMotor.rotate(convertAngle(WHEEL_RAD, TRACK, deltaAngle), true);
-			rightMotor.rotate(-convertAngle(WHEEL_RAD, TRACK, deltaAngle), false);
-		}
+		leftMotor.rotate(convertAngle(WHEELRAD, TRACK, theta), true);
+		rightMotor.rotate(-convertAngle(WHEELRAD, TRACK, theta), false);
 
 	}
 
-	boolean isNavigating() {
-		if((leftMotor.isMoving() || rightMotor.isMoving()))
-			return true;
-		else 
-			return false;
-
-	}
-
-	/**gives the angle you need  the wheels to roate by to cover a certain arc length (distance)
-	 * @param radius: radius of wheel
-	 * @param distance: distance you want the robot to travel 
-	 *@return: angle for rotate
+	/**
+	 * Move the robot forward or backward for a specified distance
+	 * @param distance Distance to travel 
+	 * @param forward  Represent if the robot moves forward or backward
 	 */
-	public static int convertDistance(double radius, double distance) {
+	public void move(double distance, boolean forward) {
+		
+		if (forward==true) {
+			leftMotor.rotate(convertDistance(WHEELRAD, distance),true);
+			rightMotor.rotate(convertDistance(WHEELRAD, distance), false);
+		}
+		
+		else {
+			leftMotor.rotate(-convertDistance(WHEELRAD, distance),true);
+			rightMotor.rotate(-convertDistance(WHEELRAD, distance), false);
+		}
+		
+	}
+
+	
+	public boolean isNavigating() {
+		return isNavigating;
+	}
+
+	private int convertDistance(double radius, double distance) {
 		return (int) ((180.0 * distance) / (Math.PI * radius));
 	}
 
-	public static int convertAngle(double radius, double width, double angle) {
+	private int convertAngle(double radius, double width, double angle) {
 		return convertDistance(radius, Math.PI * width * angle / 360.0);
 	}
 
-
-
-	/** turns the robot clockwise to a certaina angle
-	 * @param degree is and in degrees you want to turn to
-	 *
-	 */
-
-	public void turnCW(long degree) {
-		leftMotor.rotate(
-				convertAngle(MainController.WHEEL_RADIUS, MainController.TRACK, degree), true);
-		rightMotor.rotate(
-				-convertAngle(MainController.WHEEL_RADIUS, MainController.TRACK, degree), true);
-	}
-
-
-	public void turnCW2(long degree) {
-		leftMotor.rotate(
-				convertAngle(MainController.WHEEL_RADIUS, MainController.TRACK, degree), true);
-		rightMotor.rotate(
-				-convertAngle(MainController.WHEEL_RADIUS, MainController.TRACK, degree), false);
-	}
-	/** turns the robot counterclockwise to a certaina angle
-	 * @param degree is and in degrees you want to turn to
-	 *
-	 */
-	public void turnCCW(long degree) {
-		leftMotor.rotate(
-				-convertAngle(MainController.WHEEL_RADIUS, MainController.TRACK, degree), true);
-		rightMotor.rotate(
-				convertAngle(MainController.WHEEL_RADIUS, MainController.TRACK, degree), true);
-	}
-	/** moves the robot forward a certain distance with the current heading
-	 * @distance distance you want covered
-	 */
-	public void advance(long distance) {
-		leftMotor.rotate(convertDistance(MainController.WHEEL_RADIUS, distance), true);
-		rightMotor.rotate(convertDistance(MainController.WHEEL_RADIUS, distance), false);
-	}
-
-	/*
-	 * rotate the the medium motor that is holding the ultrasonic sensor
-	 */
-	public void rotateSensorMotor() {
-		usMotor.setSpeed(ROTATE_SPEED);
-		usMotor.rotateTo(-100);
-	}
 }

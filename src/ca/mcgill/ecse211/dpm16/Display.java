@@ -1,13 +1,14 @@
 package ca.mcgill.ecse211.dpm16;
 
 import java.text.DecimalFormat;
-//import ca.mcgill.ecse211.navigation.UltrasonicController;
+import ca.mcgill.ecse211.dpm16.Odometer;
+import ca.mcgill.ecse211.dpm16.OdometerExceptions;
 import lejos.hardware.lcd.TextLCD;
 
 /**
  * This class is used to display the content of the odometer variables (x, y, Theta)
  */
-public class OdometryDisplay implements Runnable {
+public class Display implements Runnable {
 
   private Odometer odo;
   private TextLCD lcd;
@@ -21,7 +22,7 @@ public class OdometryDisplay implements Runnable {
    * @param odoData
    * @throws OdometerExceptions 
    */
-  public OdometryDisplay(TextLCD lcd) throws OdometerExceptions {
+  public Display(TextLCD lcd) throws OdometerExceptions {
     odo = Odometer.getOdometer();
     this.lcd = lcd;
   }
@@ -32,7 +33,7 @@ public class OdometryDisplay implements Runnable {
    * @param odoData
    * @throws OdometerExceptions 
    */
-  public OdometryDisplay(TextLCD lcd, long timeout) throws OdometerExceptions {
+  public Display(TextLCD lcd, long timeout) throws OdometerExceptions {
     odo = Odometer.getOdometer();
     this.timeout = timeout;
     this.lcd = lcd;
@@ -53,8 +54,8 @@ public class OdometryDisplay implements Runnable {
       
       // Print x,y, and theta information
       DecimalFormat numberFormat = new DecimalFormat("######0.00");
-      lcd.drawString("X: " + numberFormat.format(position[0]/30.48), 0, 0);
-      lcd.drawString("Y: " + numberFormat.format(position[1]/30.48), 0, 1);
+      lcd.drawString("X: " + numberFormat.format(position[0]), 0, 0);
+      lcd.drawString("Y: " + numberFormat.format(position[1]), 0, 1);
       lcd.drawString("T: " + numberFormat.format(position[2]), 0, 2);
       
       // this ensures that the data is updated only once every period
