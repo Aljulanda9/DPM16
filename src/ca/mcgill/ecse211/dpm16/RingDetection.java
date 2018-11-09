@@ -3,7 +3,7 @@ package ca.mcgill.ecse211.dpm16;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
 /**
- * The method is used to travel through the tunnel and navigates to the tree and
+ * The thread/class is used to travel through the tunnel and navigates to the tree and
  * Detects the color and travels back.
  * 
  * @author Reem and Aljulanda

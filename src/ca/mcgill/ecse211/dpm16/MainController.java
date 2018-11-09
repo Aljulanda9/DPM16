@@ -13,6 +13,7 @@ import lejos.hardware.sensor.EV3ColorSensor;
 import lejos.hardware.sensor.EV3UltrasonicSensor;
 import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
+import lejos.utility.Delay;
 
 /**The main class that starts the motors, sensors and the localization process.
  * After localization it starts the navigation process which in turn, starts 
@@ -23,13 +24,13 @@ public class MainController {
 
 
 	private static final Port usPort = LocalEV3.get().getPort("S3");
-	public static final EV3ColorSensor colorSensor = new EV3ColorSensor(SensorPort.S2);
+	public static final EV3ColorSensor colorSensor = new EV3ColorSensor(SensorPort.S1);
 	private static final EV3LargeRegulatedMotor leftMotor =
 			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
 	private static final EV3LargeRegulatedMotor rightMotor =
 			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
-	private static final EV3LargeRegulatedMotor rampMotor =
-			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
+	//private static final EV3LargeRegulatedMotor rampMotor =
+			//new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
 	private static final EV3LargeRegulatedMotor sensorMotor =  new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
 
 	//color to be found
@@ -53,29 +54,24 @@ public class MainController {
 	
 	public static int Green_UR_x;
 	public static int Green_UR_y;
-	public static int Green_LL_x;
+	public static int Green_LL_x ;
 	public static int Green_LL_y;
 	
-	public static int BRR_UR_x;
-	public static int BRR_UR_y;
-	public static int BRR_LL_x;
-	public static int BRR_LL_y;
+	public static int TNR_UR_x = 4;
+	public static int TNR_UR_y = 1;
+	public static int TNR_LL_x = 2;
+	public static int TNR_LL_y = 2;
 	
-	public static int BRG_UR_x;
-	public static int BRG_UR_y;
-	public static int BRG_LL_x;
-	public static int BRG_LL_y;
+	public static int TNG_UR_x;
+	public static int TNG_UR_y;
+	public static int TNG_LL_x;
+	public static int TNG_LL_y;
+		
 	
-	public static int TR_UR_x;
-	public static int TR_UR_y;
-	public static int TR_LL_x;
-	public static int TR_LL_y;
-	
-	
-	private int TG_UR_x;
-	private int TG_UR_y;
-	private int TG_LL_x;
-	private int TG_LL_y;
+	private static int TR_x;
+	private static int TR_y;
+	private static int TG_x;
+	private static int TG_y;
 	//public static ObjectLocalizer oLocal = null;
 	public static void main(String[] args) throws OdometerExceptions {
 		int buttonChoice;
@@ -120,7 +116,7 @@ public class MainController {
 				new Navigation(odometer, leftMotor, rightMotor, sensorMotor, MainController.TRACK, MainController.WHEEL_RADIUS);
 
 
-		Grabber grabber = new Grabber(rampMotor);
+		//Grabber grabber = new Grabber(rampMotor);
 		//oLocal = new ObjectLocalizer(usSensor, usData, leftMotor, rightMotor,odometer, navigation);
 
 		RingDetection ringDetection =
@@ -166,11 +162,25 @@ public class MainController {
 				new LightLocalizer(odometer, colorSensor, colorData, navigation, leftMotor, rightMotor);
 		ll.localize();
 
-		grabber.rest();
+		Delay.msDelay(2000);
+		//double waypoints[][] = new double[][] {{0, TNR_LL_y-0.5}, {TNR_LL_x-0.5, TNR_LL_y-0.5}}; 
+		double waypoints[][] = new double[][] {{0, 1.5}, {1.5, 1.5}}; 
+		int i = 0; 
+		while(i<waypoints.length) {
+			
+			
+			navigation.travelTo(waypoints[i][0], waypoints[i][1],true);
+			
+			i++;
+		}
 		
-		ringDetection.run();
 		
-		grabber.rest();
+		//navigation.travelTo((double)MainController.TNR_LL_x - 0.5, odometer.getXYT()[1] , true);
+		//grabber.rest();
+		
+		//ringDetection.run();
+		
+		//grabber.rest();
 		
 		
 		while (Button.waitForAnyPress() != Button.ID_ENTER) ;

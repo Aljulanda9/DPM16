@@ -73,8 +73,7 @@ public class Navigation implements Runnable {
 
 		//assuming we are red
 		//make it go in straight lines to the bridge. Stop half a tile away from the bridge
-		travelTo((double)MainController.BRR_LL_x - 0.5, odometer.getXYT()[1], true);
-		travelTo(odometer.getXYT()[0], (double)MainController.BRR_LL_y - 0.5, true);
+		
 		/*int waypoints[][] = new int[][] { {dpm16.lowerLeftCorner[0], dpm16.lowerLeftCorner[1]}, {dpm16.lowerLeftCorner[0], dpm16.upperRightCorner[1]}, {dpm16.upperRightCorner[0], dpm16.upperRightCorner[1]}, { dpm16.upperRightCorner[0], dpm16.lowerLeftCorner[1] }, { dpm16.lowerLeftCorner[0], dpm16.lowerLeftCorner[1] },{dpm16.lowerLeftCorner[0]+1, dpm16.lowerLeftCorner[1]}, {dpm16.lowerLeftCorner[0]+1, dpm16.upperRightCorner[1]},{dpm16.upperRightCorner[0], dpm16.upperRightCorner[1]}};
 
 		while(i<waypoints.length) {
@@ -124,7 +123,8 @@ public class Navigation implements Runnable {
 		leftMotor.setSpeed(FORWARD_SPEED);
 		rightMotor.setSpeed(FORWARD_SPEED);
 		leftMotor.rotate(convertDistance(WHEEL_RAD, len), true);
-		rightMotor.rotate(convertDistance(WHEEL_RAD, len), true);
+		rightMotor.rotate(convertDistance(WHEEL_RAD, len), false);
+		
 		
 
 	}
