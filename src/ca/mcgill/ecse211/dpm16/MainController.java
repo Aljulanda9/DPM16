@@ -32,7 +32,7 @@ public class MainController {
 	
 	private static final TextLCD lcd = LocalEV3.get().getTextLCD();
 	public static final double WHEEL_RADIUS = 2.1;
-	public static final double TRACK = 10.32;
+	public static final double TRACK = 10.15;
 	
 	//competition parameters
 	public static int Red_UR_x;
@@ -79,8 +79,10 @@ public class MainController {
 		float[] usData = new float[usDistance.sampleSize()]; // usData is the buffer in which data are returned
 
 		Navigation navigator = new Navigation(odometer, leftMotor, rightMotor, null);
+		
+		Grabber grabber = new Grabber(rampMotor);
 
-
+		RingDetection detector = new RingDetection(navigator, odometer, grabber, leftMotor, rightMotor, rampMotor, TRACK, WHEEL_RADIUS);
 		do {
 			// clear the display
 			t.clear();
@@ -93,39 +95,10 @@ public class MainController {
 			buttonChoice = Button.waitForAnyPress();
 		} while (buttonChoice != Button.ID_LEFT && buttonChoice != Button.ID_RIGHT);
 
-		Grabber grabber = new Grabber(rampMotor);
 		
-		//before localization
-		grabber.move(45);
-		
-		//after localization
+		//lift grabber before localization
 		grabber.move(-45);
 		
-		//now we are at 0 degrees.. go to the tunnel
-		
-		//pushing angle for lower ring
-		grabber.move(-20);
-		
-		//go to the tree
-		
-		//slowly advance towards the tree 5mc
-		
-		
-		//backward 5cm
-		
-		//prepare for grabbing the upper ring
-		grabber.move(30);
-		//now we are at 10degrees
-		
-		//advance 5cm
-		
-		//grab the ring
-		grabber.move(25);
-		
-		//go back to base
-		
-		/*
-		// Left: falling edge; Right: rising edge
 		USLocaliser usLocaliser = new USLocaliser(odometer, leftMotor, rightMotor, usDistance, usData, buttonChoice, navigator);
 	
 	    Thread odoThread = new Thread(odometer);
@@ -151,27 +124,47 @@ public class MainController {
 
 		}
 		
+		//lower grabber after localization
+		grabber.move(45);
 		double[][] waypoints = {{0,1.5}, {1.5,1.5}, {5.5, 1.5}, {5.5, 0.5}};
 		
 		int i = 0; 
 		while(i<waypoints.length) {
-			if(i == 1) {
-				odometer.setTheta(0);
-				navigator.turnTo(90);
-			}
-
-			if(i == 3) {
-				odometer.setTheta(90);
-				navigator.turnTo(90);
-			}
+//			if(i == 1) {
+//				odometer.setTheta(0);
+//				navigator.turnTo(90);
+//			}
+//
+//			if(i == 3) {
+//				odometer.setTheta(90);
+//				navigator.turnTo(90);
+//			}
 			
 			navigator.travelTo(waypoints[i][0], waypoints[i][1]);
 	
 			i++;
 		}
 		
+		//prepare for grabbing lower ring
+		//now angle is -20
+		grabber.move(20);
 		
-		*/
+		//grab lower ring
+		navigator.move(10, true);
+		
+		//go back to prepare for grabbing upper ring
+		navigator.move(10, false);
+		
+		grabber.move(-30);
+		
+		//move to upper ring
+		navigator.move(10, true);
+
+		//lift upper ring
+		grabber.move(-25);
+		
+		navigator.travelTo(0, 0);
+		
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
 		System.exit(0);
 	}

@@ -17,7 +17,7 @@ public class Navigation extends Thread{
 	private static final int ROTATE_SPEED = 70;
 
 	private static final double GRID_SIZE = 30.48;
-
+public double prevtheta;
 	public Navigation(Odometer odo,EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, double[][] waypoints) {
 		this.odo = odo;
 		this.leftMotor = leftMotor;
@@ -38,6 +38,10 @@ public class Navigation extends Thread{
 			travelTo(waypoints[i][0], waypoints[i][1]);
 		}
 	}
+	
+	
+	
+	private static double odoAngle = 0;
 
 	/**
 	 * Let the robot travel to the specified destination
@@ -48,73 +52,91 @@ public class Navigation extends Thread{
 		
 		this.isNavigating = true;
 
-		double currentX = odo.getXYT()[0];
-		double currentY = odo.getXYT()[1];
-		// The unit length in the actual world is 30.48cm, while the unit length in our program is 1cm
-		// For example, when we need to head to the point (1,0) in the actual world, we actually need to reach (30.48*1, 30.48*0)
-		// We need to convert the reading from the odometer using the actual world's measurement convention 
-		currentX = (int)Math.round(currentX/GRID_SIZE);
-		currentY = (int)Math.round(currentY/GRID_SIZE);
-
-		// Calculate the distance between the robot's current position and the destination
-		double distance = Math.sqrt( Math.pow( ( x - currentX ), 2) + Math.pow( ( y - currentY ),2) );
-		distance = distance * GRID_SIZE;
-
-		double newTheta = 0.0; // This is the heading that the robot should have in order to reach the destination
-		
-		// This is the angle between the x-/y-axis and the line that both the current position and the destination are on
-		double alpha = Math.toDegrees( Math.atan( Math.abs(x - currentX ) / Math.abs( y - currentY ) ) ); 
-
-		// Calculate the new heading using the robot's (x,y,theta) convention
-		if (x==currentX) {
-			if (y-currentY<0) {
-				newTheta = 180;
-			}
-			else if (y-currentY>0) {
-				newTheta = 0;
-			}
-		}
-		else if (y==currentY) {
-			if (x-currentX<0) {
-				newTheta = 270;
-			}
-			else if (x-currentX>0) {
-				newTheta = 90;
-			}	
-		}
-		else if ( (x-currentX)>0 && (y-currentY)>0 ) {
-			newTheta = alpha;
-		}
-		else if ( (x-currentX)>0 && (y-currentY)<0 ) {
-			newTheta = 180 - alpha;
-		}
-		else if ( (x-currentX)<0 && (y-currentY)>0 ) {
-			newTheta = 360 - alpha;
-		}
-		else if ( (x-currentX)<0 && (y-currentY)<0 ) {
-			newTheta = 180 + alpha;
-		}
+		double calcTheta = 0, len = 0, deltaX = 0, deltaY = 0;
 
 		
-		// Let the robot rotate to have the correct heading to reach the destination
-		//turnTo(newTheta);
+		odoAngle = odo.getXYT()[2];
 
-		// Let the robot move to the destination by specifying the distance to it 
+		deltaX = x*30.48- odo.getXYT()[0];;
+		deltaY = y*30.48 - odo.getXYT()[1];
+	
+		len = Math.hypot(Math.abs(deltaX), Math.abs(deltaY));
+
+		//get angle up to 180
+		calcTheta = Math.toDegrees(Math.atan2(deltaX, deltaY));
+
+		//if result is negative subtract it from 360 to get the positive
+		if (calcTheta < 0)
+			calcTheta = 360 - Math.abs(calcTheta);
+
+		// turn to the found angle
+		turnTo2(calcTheta);
+	
+
+		// go
 		leftMotor.setSpeed(FORWARD_SPEED);
 		rightMotor.setSpeed(FORWARD_SPEED);
-		leftMotor.rotate(convertDistance(WHEELRAD, distance), true);
-		rightMotor.rotate(convertDistance(WHEELRAD, distance), false);
-
+		leftMotor.rotate(convertDistance(WHEELRAD, len), true);
+		rightMotor.rotate(convertDistance(WHEELRAD, len), false);
 	}
+	
+	
+	
+	public void turnTo2(double newTheta) {boolean turnLeft = false; //to do the minimal turn
+	double deltaAngle = 0;
+	// get the delta nagle
+	deltaAngle = newTheta - odoAngle;
+
+	// if the delta angle is negative find the equivalent positive
+	if (deltaAngle < 0) {
+		deltaAngle = 360 - Math.abs(deltaAngle);
+	}
+
+	// Check if angle is the minimal or not
+	if (deltaAngle > 180) {
+		turnLeft = true;
+		deltaAngle = 360 - Math.abs(deltaAngle);
+	} else {
+		turnLeft = false;
+	}
+
+	// set to rotation speed
+	leftMotor.setSpeed(ROTATE_SPEED);
+	rightMotor.setSpeed(ROTATE_SPEED);
+
+	//turn robot to direction we chose
+	if (turnLeft) {
+		leftMotor.rotate(-convertAngle(WHEELRAD, TRACK, deltaAngle), true);
+		rightMotor.rotate(convertAngle(WHEELRAD, TRACK, deltaAngle), false);
+	} else {
+		leftMotor.rotate(convertAngle(WHEELRAD, TRACK, deltaAngle), true);
+		rightMotor.rotate(-convertAngle(WHEELRAD, TRACK, deltaAngle), false);
+	}
+
+}
+	
+	
+	
+	
+	
+	
+	
+	
 
 	/**
 	 * Let the robot get to the specified heading by turning a minimal rotation angle
 	 * @param newTheta The heading that the robot needs to rotate to
+	 * 
+	 * 
+	 * 
+	 * 
 	 */
 	public void turnTo(double newTheta) {
 
 		// Calculate how much the robot needs to rotate from its current heading to the specified heading
 		double theta = newTheta - odo.getXYT()[2];
+		
+		//double theta = newTheta - prevtheta;
 		
 		// Calculate the "minimal" angle to rotate
 		// Positive angle: angle to rotate clockwise; Negative angle: angle to rotate counter-clockwise
@@ -134,7 +156,7 @@ public class Navigation extends Thread{
 
 		leftMotor.rotate(convertAngle(WHEELRAD, TRACK, theta), true);
 		rightMotor.rotate(-convertAngle(WHEELRAD, TRACK, theta), false);
-
+		//prevtheta=theta;
 	}
 
 	/**
