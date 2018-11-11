@@ -1,6 +1,7 @@
 package ca.mcgill.ecse211.dpm16;
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
+import lejos.utility.Delay;
 
 public class Navigation extends Thread{
 
@@ -13,11 +14,11 @@ public class Navigation extends Thread{
 	private static final double TRACK = MainController.TRACK;
 	private static final double WHEELRAD = MainController.WHEEL_RADIUS;
 
-	private static final int FORWARD_SPEED =250;
+	public static int FORWARD_SPEED =150;
 	private static final int ROTATE_SPEED = 70;
 
 	private static final double GRID_SIZE = 30.48;
-public double prevtheta;
+	public double prevtheta;
 	public Navigation(Odometer odo,EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, double[][] waypoints) {
 		this.odo = odo;
 		this.leftMotor = leftMotor;
@@ -176,13 +177,15 @@ public double prevtheta;
 			rightMotor.rotate(-convertDistance(WHEELRAD, distance), false);
 		}
 		
+		Delay.msDelay(500);
+		
 	}
 
 	
 	public boolean isNavigating() {
 		return isNavigating;
 	}
-
+	
 	private int convertDistance(double radius, double distance) {
 		return (int) ((180.0 * distance) / (Math.PI * radius));
 	}

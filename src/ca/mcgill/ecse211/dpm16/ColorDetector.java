@@ -118,7 +118,8 @@ public class ColorDetector{
 				Sound.beep();
 				return 4;
 			}
-			return 0;
+			Sound.buzz();
+			return 5;
 		}
 
 	}

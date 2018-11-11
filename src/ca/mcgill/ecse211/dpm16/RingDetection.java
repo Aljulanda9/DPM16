@@ -1,6 +1,7 @@
 package ca.mcgill.ecse211.dpm16;
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
+import lejos.hardware.sensor.EV3ColorSensor;
 
 /**
  * The thread/class is used to travel through the tunnel and navigates to the tree and
@@ -8,8 +9,9 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
  * 
  * @author Reem and Aljulanda
  */
-public class RingDetection implements Runnable{
-	private Navigation navigation;
+public class RingDetection{
+	private Navigation navigator;
+	private ColorDetector colorDetector; 
 	private EV3LargeRegulatedMotor leftMotor;
 	private EV3LargeRegulatedMotor rightMotor;
 	private EV3LargeRegulatedMotor usMotor;
@@ -23,9 +25,10 @@ public class RingDetection implements Runnable{
 	private final int US_ROTATION = 270; //constant for the US sensor rotation when bang bang starts/stops
 
 
-	public RingDetection(Navigation navigation, Odometer odometer, Grabber grabber, EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, EV3LargeRegulatedMotor sensorMotor,
+	public RingDetection(ColorDetector colorDetector, Navigation navigation, Odometer odometer, Grabber grabber, EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, EV3LargeRegulatedMotor sensorMotor,
 			final double TRACK, final double WHEEL_RAD) { // constructor
-		this.navigation = navigation;
+		this.navigator = navigation;
+		this.colorDetector = colorDetector;
 		this.odometer = odometer;
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
@@ -37,33 +40,40 @@ public class RingDetection implements Runnable{
 	}
 
 
-	@Override
-	public void run() {
-		// TODO Auto-generated method stub
+	
+	public void detect() {
+		Navigation.FORWARD_SPEED = 10;
+		//prepare for grabbing lower ring
+		//now angle is -20
+		grabber.move(20);
 		
-		//start at -20
-		//slowly advance towards the tree 5mc
+		//grab lower ring
+		navigator.move(10, true);
 		
-		navigation.move(10, true);
+		//go back to prepare for grabbing upper ring
+		navigator.move(10, false);
 		
+		grabber.move(-10);
 		
-		//backward 5cm
+		//detect color
+		colorDetector.detect();
 		
+		grabber.move(10);
+		grabber.move(-30);
 		
-		
-		
-		grabber.move(30);
-		//now we are at 10degrees
-		
-		//advance 5cm
-		
-		//grab the ring
-		grabber.move(25);
-		
-		//go back to base
-		
+		//move to upper ring
+		navigator.move(10, true);
 
+		//lift upper ring
+		grabber.move(-15);
 		
+		//move back
+		navigator.move(10, false);
+		//detect color
+		colorDetector.detect();
+
+		Navigation.FORWARD_SPEED = 150;
+
 	}
 
 }

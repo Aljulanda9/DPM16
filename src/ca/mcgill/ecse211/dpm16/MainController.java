@@ -26,6 +26,8 @@ public class MainController {
 	
 	private static final Port csPort = LocalEV3.get().getPort("S1");
 	
+	private static final Port csPortRing = LocalEV3.get().getPort("S2");
+	
 	private static final EV3LargeRegulatedMotor rampMotor = 
 			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
 
@@ -81,8 +83,17 @@ public class MainController {
 		Navigation navigator = new Navigation(odometer, leftMotor, rightMotor, null);
 		
 		Grabber grabber = new Grabber(rampMotor);
+		
+		EV3ColorSensor csSensorRing = new EV3ColorSensor(csPortRing);
+		
+		ColorDetector colorDetector = new ColorDetector(csSensorRing);
 
-		RingDetection detector = new RingDetection(navigator, odometer, grabber, leftMotor, rightMotor, rampMotor, TRACK, WHEEL_RADIUS);
+
+		RingDetection detector = new RingDetection(colorDetector, navigator, odometer, grabber, leftMotor, rightMotor, rampMotor, TRACK, WHEEL_RADIUS);
+		
+		
+		
+		
 		do {
 			// clear the display
 			t.clear();
@@ -129,41 +140,24 @@ public class MainController {
 		double[][] waypoints = {{0,1.5}, {1.5,1.5}, {5.5, 1.5}, {5.5, 0.5}};
 		
 		int i = 0; 
-		while(i<waypoints.length) {
-//			if(i == 1) {
-//				odometer.setTheta(0);
-//				navigator.turnTo(90);
-//			}
-//
-//			if(i == 3) {
-//				odometer.setTheta(90);
-//				navigator.turnTo(90);
-//			}
-			
+		while(i<waypoints.length) {			
 			navigator.travelTo(waypoints[i][0], waypoints[i][1]);
-	
 			i++;
 		}
 		
-		//prepare for grabbing lower ring
-		//now angle is -20
-		grabber.move(20);
 		
-		//grab lower ring
-		navigator.move(10, true);
+		//Grab ring and detect color
+		detector.detect();
 		
-		//go back to prepare for grabbing upper ring
-		navigator.move(10, false);
 		
-		grabber.move(-30);
+		//navigator.travelTo(0, 0);
 		
-		//move to upper ring
-		navigator.move(10, true);
-
-		//lift upper ring
-		grabber.move(-25);
-		
-		navigator.travelTo(0, 0);
+		//travel back to base using the same path that it came from
+		i = waypoints.length-1;
+		while(i>=0) {
+			navigator.travelTo(waypoints[i][0], waypoints[i][1]);
+			i--;
+		}
 		
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
 		System.exit(0);

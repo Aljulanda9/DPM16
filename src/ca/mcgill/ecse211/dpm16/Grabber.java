@@ -20,6 +20,6 @@ public class Grabber {
 	 */
 	public void move(int angle) {
 		rampMotor.rotate(angle);
-		Delay.msDelay(1000);
+		Delay.msDelay(500);
 	}
 }
