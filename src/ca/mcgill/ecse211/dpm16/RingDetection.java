@@ -46,12 +46,28 @@ public class RingDetection{
 		//prepare for grabbing lower ring
 		//now angle is -20
 		grabber.move(20);
+				
 		
 		//grab lower ring
 		navigator.move(10, true);
 		
+		
 		//go back to prepare for grabbing upper ring
 		navigator.move(10, false);
+		
+		///////////////////////////////////////////
+		grabber.move(10);  
+		grabber.move(-35);
+		grabber.move(35);
+		
+		grabber.move(-35);
+		grabber.move(35);
+		
+		grabber.move(-35);
+		grabber.move(35);
+		grabber.move(-10);  
+		///////////////////////////////////////////
+
 		
 		grabber.move(-10);
 		
@@ -65,14 +81,25 @@ public class RingDetection{
 		navigator.move(10, true);
 
 		//lift upper ring
-		grabber.move(-15);
+//		grabber.move(-15);
+		/////////////////////////////////
+		grabber.move(-35);
+		grabber.move(35);
+		
+		grabber.move(-35);
+		grabber.move(35);
+		
+		grabber.move(-35);
+		grabber.move(35);
+		//////////////////////////////////////
+		
 		
 		//move back
 		navigator.move(10, false);
 		//detect color
 		colorDetector.detect();
 
-		Navigation.FORWARD_SPEED = 150;
+		Navigation.FORWARD_SPEED = 250;
 
 	}
 

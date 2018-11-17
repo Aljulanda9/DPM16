@@ -3,6 +3,7 @@ package ca.mcgill.ecse211.dpm16;
 import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.robotics.SampleProvider;
+import lejos.utility.Delay;
 
 public class LightLocaliser {
 	
@@ -149,6 +150,8 @@ public class LightLocaliser {
 		// Rotate to the 0 degree heading
 		navigator.turnTo(-ANGLE_OFFSET);
 		odometer.setTheta(0);
+		Delay.msDelay(3000);
+		
 	}
 	
 	

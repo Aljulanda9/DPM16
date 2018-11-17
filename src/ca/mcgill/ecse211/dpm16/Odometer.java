@@ -25,8 +25,10 @@ public class Odometer extends OdometerData implements Runnable {
 
   private final double TRACK;
   private final double WHEEL_RAD;
+  private int lastTachoL, lastTachoR;
+  private double X=0, Y=0, Theta = 0;
+  private double distL,distR, deltaD, deltaT, dX, dY;
 
-  private double[] position;
 
   private static final long ODOMETER_PERIOD = 25; // odometer update period in ms
 
@@ -39,7 +41,7 @@ public class Odometer extends OdometerData implements Runnable {
    * @throws OdometerExceptions
    */
   private Odometer(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor,
-      final double TRACK, final double WHEEL_RAD) throws OdometerExceptions {
+      final double TRACK, final double WHEEL_RAD) throws OdometerExceptions  {
     odoData = OdometerData.getOdometerData(); // Allows access to x,y,z
                                               // manipulation methods
     this.leftMotor = leftMotor;
@@ -47,7 +49,6 @@ public class Odometer extends OdometerData implements Runnable {
 
     // Reset the values of x, y and z to 0
     odoData.setXYT(0, 0, 0);
-    
 
     this.leftMotorTachoCount = 0;
     this.rightMotorTachoCount = 0;
@@ -66,8 +67,8 @@ public class Odometer extends OdometerData implements Runnable {
    * @throws OdometerExceptions
    */
   public synchronized static Odometer getOdometer(EV3LargeRegulatedMotor leftMotor,
-      EV3LargeRegulatedMotor rightMotor, final double TRACK, final double WHEEL_RAD)
-      throws OdometerExceptions {
+      EV3LargeRegulatedMotor rightMotor, final double TRACK, final double WHEEL_RAD) throws OdometerExceptions
+       {
     if (odo != null) { // Return existing object
       return odo;
     } else { // create object and return it
@@ -98,43 +99,28 @@ public class Odometer extends OdometerData implements Runnable {
   // run method (required for Thread)
   public void run() {
     long updateStart, updateEnd;
-    double distLeft = 0;
-    double distRight = 0;
-    double displacement = 0;
-    double dX = 0;
-    double dY = 0;
-    double dTheta = 0;
-    double currentTheta = odo.getXYT()[2];
-    int currentLeftTacho = 0;
-    int currentRightTacho = 0;
-    
-    leftMotorTachoCount = leftMotor.getTachoCount();
-    rightMotorTachoCount = rightMotor.getTachoCount();
     while (true) {
-      updateStart = System.currentTimeMillis();
-
+    	updateStart = System.currentTimeMillis();
+  
+    		leftMotorTachoCount = leftMotor.getTachoCount();
+    		rightMotorTachoCount = rightMotor.getTachoCount();
+    		distL=3.1415926*WHEEL_RAD*(leftMotorTachoCount-lastTachoL)/180; // compute the distance travelled by the
+    		distR=3.1415926*WHEEL_RAD*(rightMotorTachoCount-lastTachoR)/180; // the left and right wheel in the current update period
+    		lastTachoL=leftMotorTachoCount; //update left
+    		lastTachoR=rightMotorTachoCount;// and right motor tachocount
+    		deltaD=0.5*(distL+distR);
+    		deltaT=(distL-distR)/TRACK; // direction change in the current update period (in radians)
+    		Theta+=deltaT; // update theta
+    		dX=deltaD*Math.sin(Theta); //update x 
+    		dY=deltaD*Math.cos(Theta);// and y coordinates
+    		X=X+dX;
+    		Y=Y+dY;				
+			
+    	  	odo.update(dX, dY, deltaT*180/Math.PI);
       // TODO Calculate new robot position based on tachometer counts
-      currentLeftTacho = leftMotor.getTachoCount();
-	  currentRightTacho = rightMotor.getTachoCount();
       
-	  distRight = (currentRightTacho-rightMotorTachoCount)*Math.PI*WHEEL_RAD/180; 
-	  distLeft =  (currentLeftTacho-leftMotorTachoCount) *Math.PI*WHEEL_RAD/180; 
-	  displacement = (distLeft+distRight)/2; // Magnitude of displacement
-
-	  // Update motorTachoCount values for future reference
-	  leftMotorTachoCount = currentLeftTacho;
-	  rightMotorTachoCount = currentRightTacho;
-
-	  // Update heading in degrees
-	  currentTheta = odo.getXYT()[2] + ( (distRight-distLeft)/TRACK )*180/Math.PI;  
-
-	  dX = displacement*Math.sin(Math.toRadians(currentTheta)); //deltaX
-	  dY = displacement*Math.cos(Math.toRadians(currentTheta)); //deltaY
-	  dTheta = ( (distRight-distLeft)/TRACK )*180/Math.PI;   ///// 
-      
-	  
       // TODO Update odometer values with new calculated values
-      odo.update(dX, dY, -1*dTheta);
+
 
       // this ensures that the odometer only runs once every period
       updateEnd = System.currentTimeMillis();
@@ -147,5 +133,4 @@ public class Odometer extends OdometerData implements Runnable {
       }
     }
   }
-
 }

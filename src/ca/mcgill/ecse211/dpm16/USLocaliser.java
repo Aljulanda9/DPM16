@@ -30,7 +30,7 @@ public class USLocaliser implements Runnable {
 	private final int ANGLE_OFFSET = 2;
 
 
-	public USLocaliser(Odometer odo, EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, SampleProvider us, float[] data, int option, Navigation navigator) {
+	public USLocaliser(Odometer odo, EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, SampleProvider us, float[] data, Navigation navigator) {
 		this.odo = odo;
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
@@ -38,7 +38,6 @@ public class USLocaliser implements Runnable {
 		rightMotor.setSpeed(ROTATE_SPEED);
 		this.us = us;
 		this.data = data;
-		this.option = option;
 		this.navigator = navigator;
 		this.filterControl = 0;
 		this.distance = 255;
@@ -55,7 +54,7 @@ public class USLocaliser implements Runnable {
 		double thetaB = 0.0;
 
 		//Falling edge
-		if (option==Button.ID_LEFT) {
+		if (true) {
 			
 			// Delay the start time for motor rotation to wait for Ultrasonic sensor to turn on
 			Delay.msDelay(2000);
@@ -112,60 +111,60 @@ public class USLocaliser implements Runnable {
 		}
 
 		//Rising edge
-		else if (option==Button.ID_RIGHT) {
-			
-			// Delay the start time for motor rotation to wait for Ultrasonic sensor to turn on
-			Delay.msDelay(2000);
-
-			// Rotate the robot until it sees the wall
-			while ( getFilteredData() > ( WALL_DIST - MARGIN ) ) {
-				leftMotor.backward();
-				rightMotor.forward();
-			}
-
-
-			// Keep rotating until it sees no wall
-			while ( getFilteredData() < ( WALL_DIST + MARGIN ) ) {
-				leftMotor.backward();
-				rightMotor.forward();
-			}
-
-			Sound.beep();
-			// During testing, we found that if we did not set the robot's speed to 0
-			// It would rotate ~10 degrees more than it should
-			leftMotor.setSpeed(0);
-			rightMotor.setSpeed(0);
-
-			// Store the heading at this point
-			thetaA = odo.getXYT()[2];		
-
-			leftMotor.setSpeed(ROTATE_SPEED);
-			rightMotor.setSpeed(ROTATE_SPEED);
-
-
-			// Switch direction and rotate until it sees the wall
-			while ( getFilteredData() > ( WALL_DIST - MARGIN ) ) {
-				leftMotor.forward();
-				rightMotor.backward();
-			}
-
-			// Keep rotating until it sees no wall
-			while ( getFilteredData() < ( WALL_DIST + MARGIN ) ) {
-				leftMotor.forward();
-				rightMotor.backward();
-			} 
-
-			Sound.beep();
-			// During testing, we found that if we did not set the robot's speed to 0
-			// It would rotate ~10 degrees more than it should
-			leftMotor.setSpeed(0);
-			rightMotor.setSpeed(0);
-
-
-			// Store the heading at this point
-			thetaB = odo.getXYT()[2];
-
-		}
+//		else if (option==Button.ID_RIGHT) {
+//			
+//			// Delay the start time for motor rotation to wait for Ultrasonic sensor to turn on
+//			Delay.msDelay(2000);
+//
+//			// Rotate the robot until it sees the wall
+//			while ( getFilteredData() > ( WALL_DIST - MARGIN ) ) {
+//				leftMotor.backward();
+//				rightMotor.forward();
+//			}
+//
+//
+//			// Keep rotating until it sees no wall
+//			while ( getFilteredData() < ( WALL_DIST + MARGIN ) ) {
+//				leftMotor.backward();
+//				rightMotor.forward();
+//			}
+//
+//			Sound.beep();
+//			// During testing, we found that if we did not set the robot's speed to 0
+//			// It would rotate ~10 degrees more than it should
+//			leftMotor.setSpeed(0);
+//			rightMotor.setSpeed(0);
+//
+//			// Store the heading at this point
+//			thetaA = odo.getXYT()[2];		
+//
+//			leftMotor.setSpeed(ROTATE_SPEED);
+//			rightMotor.setSpeed(ROTATE_SPEED);
+//
+//
+//			// Switch direction and rotate until it sees the wall
+//			while ( getFilteredData() > ( WALL_DIST - MARGIN ) ) {
+//				leftMotor.forward();
+//				rightMotor.backward();
+//			}
+//
+//			// Keep rotating until it sees no wall
+//			while ( getFilteredData() < ( WALL_DIST + MARGIN ) ) {
+//				leftMotor.forward();
+//				rightMotor.backward();
+//			} 
+//
+//			Sound.beep();
+//			// During testing, we found that if we did not set the robot's speed to 0
+//			// It would rotate ~10 degrees more than it should
+//			leftMotor.setSpeed(0);
+//			rightMotor.setSpeed(0);
+//
+//
+//			// Store the heading at this point
+//			thetaB = odo.getXYT()[2];
+//
+//		}
 
 		double delTheta = 0.0;
 

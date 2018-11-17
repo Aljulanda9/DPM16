@@ -5,16 +5,16 @@ import lejos.utility.Delay;
 
 public class Navigation extends Thread{
 
-	private Odometer odo;
+	public Odometer odo;
 	private EV3LargeRegulatedMotor leftMotor;
 	private EV3LargeRegulatedMotor rightMotor;
 	private boolean isNavigating;
 	private double[][] waypoints;
 
-	private static final double TRACK = MainController.TRACK;
+	private static double TRACK = MainController.TRACK;
 	private static final double WHEELRAD = MainController.WHEEL_RADIUS;
 
-	public static int FORWARD_SPEED =150;
+	public static int FORWARD_SPEED =250;
 	private static final int ROTATE_SPEED = 70;
 
 	private static final double GRID_SIZE = 30.48;
@@ -58,9 +58,11 @@ public class Navigation extends Thread{
 		
 		odoAngle = odo.getXYT()[2];
 
-		deltaX = x*30.48- odo.getXYT()[0];;
+		deltaX = x*30.48- odo.getXYT()[0];
 		deltaY = y*30.48 - odo.getXYT()[1];
 	
+		double xxx = odo.getXYT()[0];
+		double yyy = odo.getXYT()[0];
 		len = Math.hypot(Math.abs(deltaX), Math.abs(deltaY));
 
 		//get angle up to 180
