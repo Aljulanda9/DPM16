@@ -18,7 +18,7 @@ public class Navigation extends Thread{
 	private static final int ROTATE_SPEED = 70;
 
 	private static final double GRID_SIZE = 30.48;
-	public double prevtheta;
+	public double prevtheta = 0;
 	public Navigation(Odometer odo,EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, double[][] waypoints) {
 		this.odo = odo;
 		this.leftMotor = leftMotor;
@@ -62,7 +62,7 @@ public class Navigation extends Thread{
 		deltaY = y*30.48 - odo.getXYT()[1];
 	
 		double xxx = odo.getXYT()[0];
-		double yyy = odo.getXYT()[0];
+		double yyy = odo.getXYT()[1];
 		len = Math.hypot(Math.abs(deltaX), Math.abs(deltaY));
 
 		//get angle up to 180
@@ -88,8 +88,8 @@ public class Navigation extends Thread{
 	public void turnTo2(double newTheta) {boolean turnLeft = false; //to do the minimal turn
 	double deltaAngle = 0;
 	// get the delta nagle
-	deltaAngle = newTheta - odoAngle;
-
+	//deltaAngle = newTheta - odoAngle;
+	 deltaAngle = newTheta - prevtheta;
 	// if the delta angle is negative find the equivalent positive
 	if (deltaAngle < 0) {
 		deltaAngle = 360 - Math.abs(deltaAngle);
@@ -115,6 +115,7 @@ public class Navigation extends Thread{
 		leftMotor.rotate(convertAngle(WHEELRAD, TRACK, deltaAngle), true);
 		rightMotor.rotate(-convertAngle(WHEELRAD, TRACK, deltaAngle), false);
 	}
+	prevtheta=newTheta;
 
 }
 	
