@@ -17,7 +17,7 @@ public class LightLocaliser {
 	
 	
 	private final int SENSOR_OFFSET = 13;
-	private final int FORWARD_SPEED = 100;
+	private final int FORWARD_SPEED = 150;
 	private final int ROTATE_SPEED = 70;
 	private final int NUM_OF_LINES = 4;
 	

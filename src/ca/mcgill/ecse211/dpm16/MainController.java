@@ -38,7 +38,7 @@ public class MainController {
 
 	private static final TextLCD lcd = LocalEV3.get().getTextLCD();
 	public static final double WHEEL_RADIUS = 2.1;
-	public static double TRACK = 9.70;
+	public static double TRACK = 9.80;
 
 	// ** Set these as appropriate for your team and current situation **
 	private static final String SERVER_IP = "192.168.2.9";
@@ -114,6 +114,42 @@ public class MainController {
 		// Initialize WifiConnection class
 		WifiConnection conn = new WifiConnection(SERVER_IP, TEAM_NUMBER, ENABLE_DEBUG_WIFI_PRINT);
 
+		final TextLCD t = LocalEV3.get().getTextLCD();
+
+
+
+		Odometer odometer = Odometer.getOdometer(leftMotor, rightMotor, TRACK, WHEEL_RADIUS);
+		Display odometryDisplay = new Display(lcd); // No need to change
+		
+		// Set up ultrasonic sensor
+		@SuppressWarnings("resource") // Because we don't bother to close this resource
+		SensorModes usSensor = new EV3UltrasonicSensor(usPort); // usSensor is the instance
+		SampleProvider usDistance = usSensor.getMode("Distance"); // usDistance provides samples from this instance
+		float[] usData = new float[usDistance.sampleSize()]; // usData is the buffer in which data are returned
+
+		Navigation navigator = new Navigation(odometer, leftMotor, rightMotor, null);
+
+		Grabber grabber = new Grabber(rampMotor);
+
+		EV3ColorSensor csSensorRing = new EV3ColorSensor(csPortRing);
+
+		ColorDetector colorDetector = new ColorDetector(csSensorRing);
+
+
+		RingDetection detector = new RingDetection(colorDetector, navigator, odometer, grabber, leftMotor, rightMotor, rampMotor, TRACK, WHEEL_RADIUS);
+
+
+		USLocaliser usLocaliser = new USLocaliser(odometer, leftMotor, rightMotor, usDistance, usData, navigator);
+		
+		
+		// Set up color sensor
+		EV3ColorSensor csSensor = new EV3ColorSensor(csPort);
+		csSensor.setFloodlight(lejos.robotics.Color.RED);
+		SampleProvider csColor = csSensor.getRedMode();
+		float[] colorData = new float[csColor.sampleSize()];
+		LightLocaliser lightLocaliser = new LightLocaliser(navigator, odometer, leftMotor, rightMotor, csColor, colorData);	
+
+		
 		// Connect to server and get the data, catching any errors that might occur
 
 
@@ -206,7 +242,7 @@ public class MainController {
 
 			//real tree
 			T_x = TR_x;
-			T_y = TR_x;
+			T_y = TR_y;
 
 			//corner
 			corner = RedCorner;
@@ -214,31 +250,7 @@ public class MainController {
 		}
 		int buttonChoice;
 
-		final TextLCD t = LocalEV3.get().getTextLCD();
-
-
-
-		Odometer odometer = Odometer.getOdometer(leftMotor, rightMotor, TRACK, WHEEL_RADIUS);
-		Display odometryDisplay = new Display(lcd); // No need to change
-
-
 		t.clear();
-		// Set up ultrasonic sensor
-		@SuppressWarnings("resource") // Because we don't bother to close this resource
-		SensorModes usSensor = new EV3UltrasonicSensor(usPort); // usSensor is the instance
-		SampleProvider usDistance = usSensor.getMode("Distance"); // usDistance provides samples from this instance
-		float[] usData = new float[usDistance.sampleSize()]; // usData is the buffer in which data are returned
-
-		Navigation navigator = new Navigation(odometer, leftMotor, rightMotor, null);
-
-		Grabber grabber = new Grabber(rampMotor);
-
-		EV3ColorSensor csSensorRing = new EV3ColorSensor(csPortRing);
-
-		ColorDetector colorDetector = new ColorDetector(csSensorRing);
-
-
-		RingDetection detector = new RingDetection(colorDetector, navigator, odometer, grabber, leftMotor, rightMotor, rampMotor, TRACK, WHEEL_RADIUS);
 
 
 
@@ -252,29 +264,17 @@ public class MainController {
 		//lift grabber before localization
 		grabber.move(-45);
 
-		USLocaliser usLocaliser = new USLocaliser(odometer, leftMotor, rightMotor, usDistance, usData, navigator);
-
-
-		//Thread localiserThread = new Thread(usLocaliser);
-		//localiserThread.start();
-
+				
+		
 		usLocaliser.run();
 		Delay.msDelay(3000);
 
 
-
-		// Set up color sensor
-		EV3ColorSensor csSensor = new EV3ColorSensor(csPort);
-		csSensor.setFloodlight(lejos.robotics.Color.RED);
-		SampleProvider csColor = csSensor.getRedMode();
-		float[] colorData = new float[csColor.sampleSize()];
-		LightLocaliser lightLocaliser = new LightLocaliser(navigator, odometer, leftMotor, rightMotor, csColor, colorData);	
-
 		// Start light localization
 		lightLocaliser.doLocalization();
+		//Delay.msDelay(2000);
 
-
-		Delay.msDelay(3000);
+		Delay.msDelay(2000);
 		if(corner == 0) {
 			odometer.setXYT(1*30.48, 1*30.48, 0);
 			navigator.prevtheta = 0;
@@ -295,7 +295,7 @@ public class MainController {
 			navigator.prevtheta = 90;
 		}
 
-		Delay.msDelay(3000);
+		Delay.msDelay(2000);
 
 		//determine if horizontal or vertical
 		if(Math.abs(T_UR_y -T_LL_y) == 1) {
@@ -305,39 +305,44 @@ public class MainController {
 
 		//lower grabber after localization
 		grabber.move(45);
-		double waypoints[][] = new double[3][2];
+		double waypoints[][] = new double[4][2];
 		if(horizontal) {
 			waypoints[0][0] = T_LL_x - 0.5;
-			waypoints[0][1] = T_LL_y + 0.5;
+			waypoints[0][1] = T_LL_y + 0.4;
 
 			waypoints[1][0] = T_UR_x + 1.0;
-			waypoints[1][1] = T_UR_y - 0.5;
+			waypoints[1][1] = T_UR_y - 0.6;
 
-			waypoints[2][0] = T_x - 1;
+			waypoints[2][0] = T_x - 2;
 			waypoints[2][1] = T_y;
+			
+			waypoints[3][0] = T_x - 0.75;
+			waypoints[3][1] = T_y;
 
 			//double[][] waypoints = {{TNG_LL_x - 0.5, TNG_LL_y + 0.5}, {TNG_UR_x + 0.5, TNG_UR_y - 0.5}, {TG_x - 1, TG_y}};
 			//double[][] waypoints = {{2.5,2.5}, {5.5, 2.5}, {6,1}};
 		}else {
-			waypoints[0][0] = T_LL_x + 0.5;
+			waypoints[0][0] = T_LL_x + 0.4;
 			waypoints[0][1] = T_LL_y - 0.5;
 
-			waypoints[1][0] = T_UR_x - 0.5;
+			waypoints[1][0] = T_UR_x - 0.6;
 			waypoints[1][1] = T_UR_y + 1.0;
 
-			waypoints[2][0] = T_x - 0.5;
-			waypoints[2][1] = T_y - 0.5;
+			waypoints[2][0] = T_x - 2;
+			
+			waypoints[2][1] = T_y;
+			
+			waypoints[3][0] = T_x - 0.75;
+			waypoints[3][1] = T_y;
 			//double[][] waypoints = {{TNG_LL_x + 0.5, TNG_LL_y - 0.5}, {TNG_UR_x - 0.5, TNG_UR_y + 0.5}, {TG_x - 1, TG_y}};
 		}
 
-		//		double[][] waypoints = {{1.5,1.5}, {1.5, 4.5}, {6,6}};
+		//double[][] waypoints = {{1,2}, {3, 2}, {3,1}, {1,2}};
 
-		double ppx = odometer.getXYT()[0];
-		double ppy = odometer.getXYT()[1];
-		double ppt = odometer.getXYT()[2];
 		int i = 0;
 		while(i<waypoints.length) {	
 			navigator.travelTo(waypoints[i][0], waypoints[i][1]);
+			Delay.msDelay(2000);
 			i++;
 		}
 
@@ -352,16 +357,22 @@ public class MainController {
 		detector.detect();
 
 
-		//navigator.travelTo(0, 0);
-
 		//travel back to base using the same path that it came from
-		//		i = waypoints.length-1;
-		//		while(i>=0) {
-		//			navigator.travelTo(waypoints[i][0], waypoints[i][1]);
-		//			i--;
-		//		}
+		i = waypoints.length-1;
+		while(i>=0) {
+			navigator.travelTo(waypoints[i][0], waypoints[i][1]);
+			i--;
+		}
 
-		//navigator.travelTo(1, 1);
+		navigator.travelTo(1, 1);
+		
+		grabber.move(-35);
+		grabber.move(35);
+		
+		grabber.move(-35);
+		grabber.move(35);
+		
+		grabber.move(55);
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
 		System.exit(0);
 	}

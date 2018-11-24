@@ -63,8 +63,8 @@ public class RingDetection{
 		grabber.move(-35);
 		grabber.move(35);
 		
-		grabber.move(-35);
-		grabber.move(35);
+//		grabber.move(-35);
+//		grabber.move(35);
 		grabber.move(-10);  
 		///////////////////////////////////////////
 
@@ -86,8 +86,8 @@ public class RingDetection{
 		grabber.move(-35);
 		grabber.move(35);
 		
-		grabber.move(-35);
-		grabber.move(35);
+//		grabber.move(-35);
+//		grabber.move(35);
 		
 		grabber.move(-35);
 		grabber.move(35);

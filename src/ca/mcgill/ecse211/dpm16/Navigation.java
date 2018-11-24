@@ -14,8 +14,8 @@ public class Navigation extends Thread{
 	private static double TRACK = MainController.TRACK;
 	private static final double WHEELRAD = MainController.WHEEL_RADIUS;
 
-	public static int FORWARD_SPEED =250;
-	private static final int ROTATE_SPEED = 70;
+	public static int FORWARD_SPEED = 250;
+	public static int ROTATE_SPEED = 70;
 
 	private static final double GRID_SIZE = 30.48;
 	public double prevtheta = 0;
@@ -81,6 +81,8 @@ public class Navigation extends Thread{
 		rightMotor.setSpeed(FORWARD_SPEED);
 		leftMotor.rotate(convertDistance(WHEELRAD, len), true);
 		rightMotor.rotate(convertDistance(WHEELRAD, len), false);
+		odo.setX(x*30.48);
+		odo.setY(y*30.48);
 	}
 	
 	
