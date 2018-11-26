@@ -8,6 +8,7 @@ import java.util.Map;
 import ca.mcgill.ecse211.dpm16.WifiConnection;
 import ca.mcgill.ecse211.dpm16.Display;
 import lejos.hardware.Button;
+import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
@@ -37,11 +38,11 @@ public class MainController {
 
 
 	private static final TextLCD lcd = LocalEV3.get().getTextLCD();
-	public static final double WHEEL_RADIUS = 2.1;
-	public static double TRACK = 9.80;
+	public static final double WHEEL_RADIUS = 2.05;
+	public static double TRACK = 9.85;
 
 	// ** Set these as appropriate for your team and current situation **
-	private static final String SERVER_IP = "192.168.2.9";
+	private static final String SERVER_IP = "192.168.2.10";
 	private static final int TEAM_NUMBER = 16;
 
 	// Enable/disable printing of debug info from the WiFi class
@@ -272,8 +273,19 @@ public class MainController {
 
 		// Start light localization
 		lightLocaliser.doLocalization();
-		//Delay.msDelay(2000);
+		
 
+		Sound.beep();
+		Sound.beep();
+		Sound.beep();
+		
+		navigator.turnTo(-15);
+		
+		Delay.msDelay(500);
+		
+		odometer.setTheta(0);
+		
+		
 		Delay.msDelay(2000);
 		if(corner == 0) {
 			odometer.setXYT(1*30.48, 1*30.48, 0);
@@ -308,52 +320,44 @@ public class MainController {
 		double waypoints[][] = new double[4][2];
 		if(horizontal) {
 			waypoints[0][0] = T_LL_x - 0.5;
-			waypoints[0][1] = T_LL_y + 0.4;
+			waypoints[0][1] = T_LL_y + 0.3;
 
 			waypoints[1][0] = T_UR_x + 1.0;
-			waypoints[1][1] = T_UR_y - 0.6;
+			waypoints[1][1] = T_UR_y - 0.7;
 
 			waypoints[2][0] = T_x - 2;
 			waypoints[2][1] = T_y;
 			
-			waypoints[3][0] = T_x - 0.75;
+			waypoints[3][0] = T_x - 1;
 			waypoints[3][1] = T_y;
 
-			//double[][] waypoints = {{TNG_LL_x - 0.5, TNG_LL_y + 0.5}, {TNG_UR_x + 0.5, TNG_UR_y - 0.5}, {TG_x - 1, TG_y}};
-			//double[][] waypoints = {{2.5,2.5}, {5.5, 2.5}, {6,1}};
 		}else {
-			waypoints[0][0] = T_LL_x + 0.4;
+			waypoints[0][0] = T_LL_x + 0.3;
 			waypoints[0][1] = T_LL_y - 0.5;
 
-			waypoints[1][0] = T_UR_x - 0.6;
+			waypoints[1][0] = T_UR_x - 0.7;
 			waypoints[1][1] = T_UR_y + 1.0;
 
 			waypoints[2][0] = T_x - 2;
 			
 			waypoints[2][1] = T_y;
 			
-			waypoints[3][0] = T_x - 0.75;
+			waypoints[3][0] = T_x - 1;
 			waypoints[3][1] = T_y;
-			//double[][] waypoints = {{TNG_LL_x + 0.5, TNG_LL_y - 0.5}, {TNG_UR_x - 0.5, TNG_UR_y + 0.5}, {TG_x - 1, TG_y}};
 		}
 
 		//double[][] waypoints = {{1,2}, {3, 2}, {3,1}, {1,2}};
 
 		int i = 0;
-		while(i<waypoints.length) {	
+		while(i<waypoints.length) {
 			navigator.travelTo(waypoints[i][0], waypoints[i][1]);
 			Delay.msDelay(2000);
 			i++;
 		}
-
-
-
-		//navigator.travelTo(2, 0);
-
-
-
-		//Grab ring and detect color
-		//grabber.move(45);
+		
+		Sound.beep();
+		Sound.beep();
+		Sound.beep();
 		detector.detect();
 
 
@@ -366,13 +370,8 @@ public class MainController {
 
 		navigator.travelTo(1, 1);
 		
-		grabber.move(-35);
-		grabber.move(35);
+		grabber.move(-75);
 		
-		grabber.move(-35);
-		grabber.move(35);
-		
-		grabber.move(55);
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
 		System.exit(0);
 	}

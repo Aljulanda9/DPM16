@@ -48,6 +48,9 @@ public class LightLocaliser {
 		
 		// Keep moving forward until a black line is detected
 		while ( !(getColor()>=BLACK_LOWER_BOUND && getColor()<=BLACK_UPPER_BOUND) ) {
+			leftMotor.setSpeed(FORWARD_SPEED);
+			rightMotor.setSpeed(FORWARD_SPEED);
+			
 			leftMotor.forward();
 			rightMotor.forward();
 		}
@@ -77,9 +80,12 @@ public class LightLocaliser {
 		// A counter to record how many black lines are detected
 		int count_line = 0;
 		
-		leftMotor.setSpeed(ROTATE_SPEED);
-		rightMotor.setSpeed(ROTATE_SPEED);
+		//leftMotor.setSpeed(ROTATE_SPEED);
+		//rightMotor.setSpeed(ROTATE_SPEED);
 		
+		
+		leftMotor.setSpeed(FORWARD_SPEED);
+		rightMotor.setSpeed(FORWARD_SPEED);
 		// Keep the robot rotating until it detects all 4 black lines
 		// i.e. negative x-axis, positive y-axis, positive x-axis, and negative y-axis
 		// The black lines are detected in the order stated above

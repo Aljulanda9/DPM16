@@ -175,6 +175,7 @@ public class Navigation extends Thread{
 		if (forward==true) {
 			leftMotor.rotate(convertDistance(WHEELRAD, distance),true);
 			rightMotor.rotate(convertDistance(WHEELRAD, distance), false);
+			
 		}
 		
 		else {
