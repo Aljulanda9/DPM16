@@ -74,7 +74,7 @@ public class RingDetection{
 		grabber.move(-15);
 		/////////////////////////////////
 		//////////////////////////////////////
-		
+		grabber.move(10);
 		
 		//move back
 		navigator.move(10, false);

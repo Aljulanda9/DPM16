@@ -1,12 +1,8 @@
 package ca.mcgill.ecse211.dpm16;
 
 
-import ca.mcgill.ecse211.dpm16.Odometer;
-
 import java.util.Map;
-
-import ca.mcgill.ecse211.dpm16.WifiConnection;
-import ca.mcgill.ecse211.dpm16.Display;
+import ca.mcgill.ecse211.dpm16.LightLocaliser1;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
@@ -32,17 +28,21 @@ public class MainController {
 	private static final Port csPort = LocalEV3.get().getPort("S1");
 
 	private static final Port csPortRing = LocalEV3.get().getPort("S2");
+	
+
+	private static final Port csPort2 = LocalEV3.get().getPort("S4");
+
 
 	private static final EV3LargeRegulatedMotor rampMotor = 
 			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
 
 
 	private static final TextLCD lcd = LocalEV3.get().getTextLCD();
-	public static final double WHEEL_RADIUS = 2.05;
-	public static double TRACK = 9.85;
+	public static final double WHEEL_RADIUS = 2.13;
+	public static double TRACK = 9.8;
 
 	// ** Set these as appropriate for your team and current situation **
-	private static final String SERVER_IP = "192.168.2.10";
+	private static final String SERVER_IP = "192.168.2.42";
 	private static final int TEAM_NUMBER = 16;
 
 	// Enable/disable printing of debug info from the WiFi class
@@ -148,9 +148,15 @@ public class MainController {
 		csSensor.setFloodlight(lejos.robotics.Color.RED);
 		SampleProvider csColor = csSensor.getRedMode();
 		float[] colorData = new float[csColor.sampleSize()];
-		LightLocaliser lightLocaliser = new LightLocaliser(navigator, odometer, leftMotor, rightMotor, csColor, colorData);	
-
 		
+		EV3ColorSensor csSensor2 = new EV3ColorSensor(csPort2);
+		csSensor2.setFloodlight(lejos.robotics.Color.RED);
+		SampleProvider csColor2 = csSensor2.getRedMode();
+		float[] colorData2 = new float[csColor2.sampleSize()];
+		//LightLocaliser lightLocaliser = new LightLocaliser(navigator, odometer, leftMotor, rightMotor, csColor, colorData);	
+		LightLocaliser1 lightLocaliser = new LightLocaliser1(odometer,csColor, colorData,csColor2, colorData2, navigator,leftMotor, rightMotor);	
+
+		//odo,sensor,data,nav,motors
 		// Connect to server and get the data, catching any errors that might occur
 
 
@@ -272,14 +278,15 @@ public class MainController {
 
 
 		// Start light localization
-		lightLocaliser.doLocalization();
-		
+		//lightLocaliser.doLocalization();
+		lightLocaliser.localize();
+		Delay.msDelay(500);
 
 		Sound.beep();
 		Sound.beep();
 		Sound.beep();
 		
-		navigator.turnTo(-15);
+		//navigator.turnTo(-15);
 		
 		Delay.msDelay(500);
 		
@@ -317,40 +324,52 @@ public class MainController {
 
 		//lower grabber after localization
 		grabber.move(45);
-		double waypoints[][] = new double[4][2];
+		double waypoints[][] = new double[5][2];
 		if(horizontal) {
-			waypoints[0][0] = T_LL_x - 0.5;
+			waypoints[0][0] = T_LL_x - 1.5;
 			waypoints[0][1] = T_LL_y + 0.3;
+			waypoints[1][0] = T_LL_x - 1.0;
+			waypoints[1][1] = T_LL_y + 0.3;
 
-			waypoints[1][0] = T_UR_x + 1.0;
-			waypoints[1][1] = T_UR_y - 0.7;
+			waypoints[2][0] = T_UR_x + 1.0;
+			waypoints[2][1] = T_UR_y - 0.7;
 
-			waypoints[2][0] = T_x - 2;
-			waypoints[2][1] = T_y;
-			
-			waypoints[3][0] = T_x - 1;
+			waypoints[3][0] = T_x - 2;
 			waypoints[3][1] = T_y;
+			
+			waypoints[4][0] = T_x - 1;
+			waypoints[4][1] = T_y;
 
 		}else {
 			waypoints[0][0] = T_LL_x + 0.3;
-			waypoints[0][1] = T_LL_y - 0.5;
-
-			waypoints[1][0] = T_UR_x - 0.7;
-			waypoints[1][1] = T_UR_y + 1.0;
-
-			waypoints[2][0] = T_x - 2;
+			waypoints[0][1] = T_LL_y - 1.5;
 			
-			waypoints[2][1] = T_y;
+			waypoints[1][0] = T_LL_x + 0.3;
+			waypoints[1][1] = T_LL_y - 1.0;
 			
-			waypoints[3][0] = T_x - 1;
+			waypoints[2][0] = T_UR_x - 0.7;
+			waypoints[2][1] = T_UR_y + 1.0;
+
+			waypoints[3][0] = T_x - 2;
 			waypoints[3][1] = T_y;
+			
+			waypoints[4][0] = T_x - 1;
+			waypoints[4][1] = T_y;
 		}
 
 		//double[][] waypoints = {{1,2}, {3, 2}, {3,1}, {1,2}};
 
 		int i = 0;
 		while(i<waypoints.length) {
+			
+			
+			
 			navigator.travelTo(waypoints[i][0], waypoints[i][1]);
+			
+			if(i==1||i==3) {
+				LightLocaliser1.beforeTunnel();
+				Delay.msDelay(2000);
+			}
 			Delay.msDelay(2000);
 			i++;
 		}
@@ -364,6 +383,7 @@ public class MainController {
 		//travel back to base using the same path that it came from
 		i = waypoints.length-1;
 		while(i>=0) {
+			
 			navigator.travelTo(waypoints[i][0], waypoints[i][1]);
 			i--;
 		}

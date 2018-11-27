@@ -1,5 +1,6 @@
 package ca.mcgill.ecse211.dpm16;
 
+
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.utility.Delay;
 
@@ -74,6 +75,46 @@ public class Navigation extends Thread{
 
 		// turn to the found angle
 		turnTo2(calcTheta);
+	
+
+		// go
+		leftMotor.setSpeed(FORWARD_SPEED);
+		rightMotor.setSpeed(FORWARD_SPEED);
+		leftMotor.rotate(convertDistance(WHEELRAD, len), true);
+		rightMotor.rotate(convertDistance(WHEELRAD, len), false);
+		odo.setX(x*30.48);
+		odo.setY(y*30.48);
+	}
+	
+	
+	
+	
+	
+public void travelTo2(double x, double y) {
+		
+		this.isNavigating = true;
+
+		double calcTheta = 0, len = 0, deltaX = 0, deltaY = 0;
+
+		
+		odoAngle = odo.getXYT()[2];
+
+		deltaX = x*30.48- odo.getXYT()[0];
+		deltaY = y*30.48 - odo.getXYT()[1];
+	
+		double xxx = odo.getXYT()[0];
+		double yyy = odo.getXYT()[1];
+		len = Math.hypot(Math.abs(deltaX), Math.abs(deltaY));
+
+		//get angle up to 180
+		calcTheta = Math.toDegrees(Math.atan2(deltaX, deltaY));
+
+		//if result is negative subtract it from 360 to get the positive
+		if (calcTheta < 0)
+			calcTheta = 360 - Math.abs(calcTheta);
+
+		// turn to the found angle
+		//turnTo2(calcTheta);
 	
 
 		// go
@@ -188,6 +229,18 @@ public class Navigation extends Thread{
 	}
 
 	
+	 public void advance(long distance) {
+		    leftMotor.rotate(convertDistance(WHEELRAD, distance), true);
+		    rightMotor.rotate(convertDistance(WHEELRAD, distance), false);
+		  }
+	
+	 public void turnCW(long degree) {
+		    leftMotor.rotate(
+		        convertAngle(WHEELRAD, TRACK, degree), true);
+		    rightMotor.rotate(
+		        -convertAngle(WHEELRAD, TRACK, degree), true);
+		   // prevtheta=prevtheta+degree;
+		  }
 	public boolean isNavigating() {
 		return isNavigating;
 	}
