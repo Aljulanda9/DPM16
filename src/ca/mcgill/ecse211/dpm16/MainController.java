@@ -50,7 +50,8 @@ public class MainController {
 
 
 	//competition parameters
-	private static boolean horizontal = false;
+	private static boolean vertical;
+	private static boolean ll;
 
 	//Teams
 	public static int RedTeam = 0;
@@ -69,6 +70,13 @@ public class MainController {
 	public  static int Green_UR_y = 0;
 	public  static int Green_LL_x = 0;
 	public  static int Green_LL_y = 0;
+	
+	//Real region
+	public  static int Region_UR_x = 0;
+	public  static int Region_UR_y = 0;
+	public  static int Region_LL_x = 0;
+	public  static int Region_LL_y = 0;
+	
 
 	//Red tunnel
 	public  static int TNR_UR_x = 0;
@@ -237,6 +245,12 @@ public class MainController {
 			//real tree
 			T_x = TG_x;
 			T_y = TG_x;
+			
+			//real region
+			Region_UR_x = Green_UR_x;
+			Region_UR_y = Green_UR_y;
+			Region_LL_x = Green_LL_x;
+			Region_LL_y = Green_LL_y;
 
 			//corner
 			corner = GreenCorner;
@@ -250,6 +264,12 @@ public class MainController {
 			//real tree
 			T_x = TR_x;
 			T_y = TR_y;
+			
+			//real region
+			Region_UR_x = Red_UR_x;
+			Region_UR_y = Red_UR_y;
+			Region_LL_x = Red_LL_x;
+			Region_LL_y = Red_LL_y;
 
 			//corner
 			corner = RedCorner;
@@ -294,6 +314,10 @@ public class MainController {
 		
 		
 		Delay.msDelay(2000);
+		
+		//lower grabber after localization
+		grabber.move(45);
+				
 		if(corner == 0) {
 			odometer.setXYT(1*30.48, 1*30.48, 0);
 			navigator.prevtheta = 0;
@@ -317,17 +341,105 @@ public class MainController {
 		Delay.msDelay(2000);
 
 		//determine if horizontal or vertical
-		if(Math.abs(T_UR_y -T_LL_y) == 1) {
-			horizontal = true;
+		vertical = false;
+		ll = false;
+
+		//lower corners
+		if(corner == 0 || corner == 1) {
+			if(T_UR_y > Region_UR_y) {//vertical
+				vertical = true;
+				ll = true;
+			}else { // horizontal
+				if(corner == 0) { // corner 0
+					vertical = false;
+					ll = true;
+				}else { // corner 1
+					vertical = false;
+					ll = false;
+				}
+			}
 		}
+		
+		//upper corners
+		if(corner == 2 || corner == 3) {
+			if(T_LL_y < Region_LL_y) {//vertical
+				vertical = true;
+				ll = false;
+			}else { //horizontal
+				if(corner == 2) { //corner 2
+					vertical = false;
+					ll = false;
+				}else { //corner 3
+					vertical = false;
+					ll = true;
+				}
+			}
+		}
+		
+		
+		double ways[][] = new double[5][2];
+		
+		if(vertical && ll) {
+			//before tunnel
+			ways[0][0] = T_LL_x + 0.3;
+			ways[0][1] = T_LL_y - 1.5;
+			
+			ways[1][0] = T_LL_x + 0.3;
+			ways[1][1] = T_LL_y - 1.0;
+			
+			//after tunnel
+			ways[2][0] = T_UR_x - 0.7;
+			ways[2][1] = T_UR_y + 1.0;
+			
+		}else if(!vertical && ll) {
+			
+			//before
+			ways[0][0] = T_LL_x - 1.5;
+			ways[0][1] = T_LL_y + 0.3;
+			
+			ways[1][0] = T_LL_x - 1.0;
+			ways[1][1] = T_LL_y + 0.3;
 
+			//after
+			ways[2][0] = T_UR_x + 1.0;
+			ways[2][1] = T_UR_y - 0.7;
+		}else if(vertical && !ll) {
+			//before tunnel
+			ways[0][0] = T_UR_x - 0.3;
+			ways[0][1] = T_UR_y + 1.5;
+			
+			ways[1][0] = T_UR_x - 0.3;
+			ways[1][1] = T_UR_y + 1.0;
+			
+			//after tunnel
+			ways[2][0] = T_LL_x + 0.7;
+			ways[2][1] = T_LL_y - 1.0;
+		}else if(!vertical && !ll){
+			//before
+			ways[0][0] = T_UR_x + 1.5;
+			ways[0][1] = T_UR_y - 0.3;
+			
+			ways[1][0] = T_UR_x + 1.0;
+			ways[1][1] = T_UR_y - 0.3;
 
-		//lower grabber after localization
-		grabber.move(45);
+			//after
+			ways[2][0] = T_LL_x - 1.0;
+			ways[2][1] = T_LL_y + 0.7;
+		}
+		
+		
+		ways[3][0] = T_x - 2;
+		ways[3][1] = T_y;
+		
+		ways[4][0] = T_x - 1;
+		ways[4][1] = T_y;
+
+		
 		double waypoints[][] = new double[5][2];
-		if(horizontal) {
+		if(ll) {
 			waypoints[0][0] = T_LL_x - 1.5;
 			waypoints[0][1] = T_LL_y + 0.3;
+			
 			waypoints[1][0] = T_LL_x - 1.0;
 			waypoints[1][1] = T_LL_y + 0.3;
 
@@ -383,7 +495,6 @@ public class MainController {
 		//travel back to base using the same path that it came from
 		i = waypoints.length-1;
 		while(i>=0) {
-			
 			navigator.travelTo(waypoints[i][0], waypoints[i][1]);
 			i--;
 		}
