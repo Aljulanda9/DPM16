@@ -38,11 +38,11 @@ public class MainController {
 
 
 	private static final TextLCD lcd = LocalEV3.get().getTextLCD();
-	public static final double WHEEL_RADIUS = 2.13;
+	public static final double WHEEL_RADIUS = 2.1;
 	public static double TRACK = 9.8;
 
 	// ** Set these as appropriate for your team and current situation **
-	private static final String SERVER_IP = "192.168.2.42";
+	private static final String SERVER_IP = "192.168.43.25";
 	private static final int TEAM_NUMBER = 16;
 
 	// Enable/disable printing of debug info from the WiFi class
@@ -295,10 +295,7 @@ public class MainController {
 		
 		usLocaliser.run();
 		Delay.msDelay(3000);
-
-
-		// Start light localization
-		//lightLocaliser.doLocalization();
+		
 		lightLocaliser.localize();
 		Delay.msDelay(500);
 
@@ -324,17 +321,17 @@ public class MainController {
 		}
 
 		if(corner == 1) {
-			odometer.setXYT(7*30.48, 1*30.48, 270);
+			odometer.setXYT(14*30.48, 1*30.48, 270);
 			navigator.prevtheta = 270;
 		}
 
 		if(corner == 2) {
-			odometer.setXYT(7*30.48, 7*30.48, 180);
+			odometer.setXYT(14*30.48, 8*30.48, 180);
 			navigator.prevtheta = 180;
 		}
 
 		if(corner == 3) {
-			odometer.setXYT(1*30.48, 7*30.48, 90);
+			odometer.setXYT(1*30.48, 8*30.48, 90);
 			navigator.prevtheta = 90;
 		}
 
@@ -405,86 +402,66 @@ public class MainController {
 			ways[2][1] = T_UR_y - 0.7;
 		}else if(vertical && !ll) {
 			//before tunnel
-			ways[0][0] = T_UR_x - 0.3;
+			ways[0][0] = T_UR_x - 0.7;
 			ways[0][1] = T_UR_y + 1.5;
 			
-			ways[1][0] = T_UR_x - 0.3;
+			ways[1][0] = T_UR_x - 0.7;
 			ways[1][1] = T_UR_y + 1.0;
 			
 			//after tunnel
-			ways[2][0] = T_LL_x + 0.7;
+			ways[2][0] = T_LL_x + 0.3;
 			ways[2][1] = T_LL_y - 1.0;
-		}else if(!vertical && !ll){
+		}else if(!vertical && !ll){			
 			//before
 			ways[0][0] = T_UR_x + 1.5;
-			ways[0][1] = T_UR_y - 0.3;
+			ways[0][1] = T_UR_y - 0.7;
 			
 			ways[1][0] = T_UR_x + 1.0;
-			ways[1][1] = T_UR_y - 0.3;
+			ways[1][1] = T_UR_y - 0.7;
 
 			//after
 			ways[2][0] = T_LL_x - 1.0;
-			ways[2][1] = T_LL_y + 0.7;
+			ways[2][1] = T_LL_y + 0.3;
 		}
 		
 		
-		ways[3][0] = T_x - 2;
-		ways[3][1] = T_y;
-		
-		ways[4][0] = T_x - 1;
-		ways[4][1] = T_y;
-
-		
-		double waypoints[][] = new double[5][2];
-		if(ll) {
-			waypoints[0][0] = T_LL_x - 1.5;
-			waypoints[0][1] = T_LL_y + 0.3;
+		if(T_x > T_UR_x) {
+			ways[3][0] = T_x - 2;
+			ways[3][1] = T_y;
 			
-			waypoints[1][0] = T_LL_x - 1.0;
-			waypoints[1][1] = T_LL_y + 0.3;
-
-			waypoints[2][0] = T_UR_x + 1.0;
-			waypoints[2][1] = T_UR_y - 0.7;
-
-			waypoints[3][0] = T_x - 2;
-			waypoints[3][1] = T_y;
-			
-			waypoints[4][0] = T_x - 1;
-			waypoints[4][1] = T_y;
+			ways[4][0] = T_x - 1;
+			ways[4][1] = T_y;
 
 		}else {
-			waypoints[0][0] = T_LL_x + 0.3;
-			waypoints[0][1] = T_LL_y - 1.5;
+			ways[3][0] = T_x + 2;
+			ways[3][1] = T_y;
 			
-			waypoints[1][0] = T_LL_x + 0.3;
-			waypoints[1][1] = T_LL_y - 1.0;
-			
-			waypoints[2][0] = T_UR_x - 0.7;
-			waypoints[2][1] = T_UR_y + 1.0;
+			ways[4][0] = T_x + 1;
+			ways[4][1] = T_y;
 
-			waypoints[3][0] = T_x - 2;
-			waypoints[3][1] = T_y;
-			
-			waypoints[4][0] = T_x - 1;
-			waypoints[4][1] = T_y;
+			//ways[5][0] = T_x + 1;
+			//ways[5][1] = T_y;
 		}
-
-		//double[][] waypoints = {{1,2}, {3, 2}, {3,1}, {1,2}};
+		
 
 		int i = 0;
-		while(i<waypoints.length) {
+		while(i<ways.length) {
+			if(i==4) {
+				navigator.travelTo3(ways[i][0], ways[i][1]);
+				Delay.msDelay(2000);
+				i++;
+			}
 			
+			else {
+			navigator.travelTo(ways[i][0], ways[i][1]);
 			
-			
-			navigator.travelTo(waypoints[i][0], waypoints[i][1]);
-			
-			if(i==1||i==3) {
+			if(i==1 || i == 2 || i==ways.length-1 ) {
 				LightLocaliser1.beforeTunnel();
 				Delay.msDelay(2000);
 			}
 			Delay.msDelay(2000);
 			i++;
-		}
+		}}
 		
 		Sound.beep();
 		Sound.beep();
@@ -493,13 +470,30 @@ public class MainController {
 
 
 		//travel back to base using the same path that it came from
-		i = waypoints.length-1;
+		i = ways.length-1;
 		while(i>=0) {
-			navigator.travelTo(waypoints[i][0], waypoints[i][1]);
+			if(i != ways.length-2) {
+				navigator.travelTo(ways[i][0], ways[i][1]);
+			}
 			i--;
 		}
 
-		navigator.travelTo(1, 1);
+		// FIX FIX FIX
+		if(corner == 0) {
+			navigator.travelTo(1*30.48, 1*30.48);
+		}
+
+		if(corner == 1) {
+			navigator.travelTo(14*30.48, 1*30.48);
+		}
+
+		if(corner == 2) {
+			navigator.travelTo(14*30.48, 8*30.48);
+		}
+
+		if(corner == 3) {
+			navigator.travelTo(1*30.48, 8*30.48);
+		}
 		
 		grabber.move(-75);
 		

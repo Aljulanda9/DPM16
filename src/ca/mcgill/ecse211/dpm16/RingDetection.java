@@ -42,42 +42,45 @@ public class RingDetection{
 
 	
 	public void detect() {
-		Navigation.FORWARD_SPEED = 10;
+		Navigation.FORWARD_SPEED = 30;
 		//prepare for grabbing lower ring
 		//now angle is -30
 		grabber.move(30);
 				
 		
 		//grab lower ring
-		navigator.move(10, true);
+		navigator.move(15, true);
 		
+		grabber.move(-10);
 		
 		//go back to prepare for grabbing upper ring
-		navigator.move(10, false);
+		navigator.move(15, false);
 		
 		///////////////////////////////////////////
 		///////////////////////////////////////////
 
-		grabber.move(-30);
+		grabber.move(-20);
 		
 		
 		//detect color
 		colorDetector.detect();
 		
-		grabber.move(10);
+		
 		grabber.move(-20);
 		
+		
 		//move to upper ring
-		navigator.move(10, true);
+		navigator.move(15, true);
 
+		grabber.move(-10);
+		
+		navigator.move(15, false);
 		//lift upper ring
-		grabber.move(-15);
-		/////////////////////////////////
-		//////////////////////////////////////
-		grabber.move(10);
+		
+		grabber.move(30);
 		
 		//move back
-		navigator.move(10, false);
+		
 		//detect color
 		colorDetector.detect();
 

@@ -15,7 +15,7 @@ public class Navigation extends Thread{
 	private static double TRACK = MainController.TRACK;
 	private static final double WHEELRAD = MainController.WHEEL_RADIUS;
 
-	public static int FORWARD_SPEED = 250;
+	public static int FORWARD_SPEED = 175;
 	public static int ROTATE_SPEED = 70;
 
 	private static final double GRID_SIZE = 30.48;
@@ -127,6 +127,50 @@ public void travelTo2(double x, double y) {
 	}
 	
 	
+public void travelTo3(double x, double y) {
+	
+	this.isNavigating = true;
+
+	double calcTheta = 0, len = 0, deltaX = 0, deltaY = 0;
+
+	
+	odoAngle = odo.getXYT()[2];
+
+	deltaX = x*30.48- odo.getXYT()[0];
+	deltaY = y*30.48 - odo.getXYT()[1];
+
+	double xxx = odo.getXYT()[0];
+	double yyy = odo.getXYT()[1];
+	len = Math.hypot(Math.abs(deltaX), Math.abs(deltaY));
+
+	//get angle up to 180
+	calcTheta = Math.toDegrees(Math.atan2(deltaX, deltaY));
+
+	//if result is negative subtract it from 360 to get the positive
+	if (calcTheta < 0)
+		calcTheta = 360 - Math.abs(calcTheta);
+
+	// turn to the found angle
+	turnTo2(calcTheta);
+	
+	Delay.msDelay(2000);
+	LightLocaliser1.beforeTunnel();
+	Delay.msDelay(2000);
+
+
+	// go
+	leftMotor.setSpeed(FORWARD_SPEED);
+	rightMotor.setSpeed(FORWARD_SPEED);
+	leftMotor.rotate(convertDistance(WHEELRAD, len), true);
+	rightMotor.rotate(convertDistance(WHEELRAD, len), false);
+	odo.setX(x*30.48);
+	odo.setY(y*30.48);
+}
+
+
+
+
+
 	
 	public void turnTo2(double newTheta) {boolean turnLeft = false; //to do the minimal turn
 	double deltaAngle = 0;

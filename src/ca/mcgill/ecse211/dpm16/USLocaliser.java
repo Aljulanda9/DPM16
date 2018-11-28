@@ -21,7 +21,7 @@ public class USLocaliser implements Runnable {
 
 	private final int WALL_DIST = 40;
 	private final int MARGIN = 3;
-	private final int ROTATE_SPEED = 150;
+	private final int ROTATE_SPEED = 90;
 	private final int FILTER_OUT = 5;
 	private final int LARGE_SENSOR_DIST = 40;
 	private final int MAX_SENSOR_DIST = 255;

@@ -8,10 +8,10 @@ import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 
 public class LightLocaliser1 {
-	static int dist= 15;
+	static int dist= 13;
 	static float oldSampleLeft;
 	static float oldSampleRight;
-	private static final int ROTATE_SPEED = 100;
+	private static final int ROTATE_SPEED = 150;
 	private static final long FREQUENCY = 10;
 	private static final double D =10.35;
 	private static SampleProvider sample1;
@@ -62,18 +62,24 @@ public class LightLocaliser1 {
 	 * we then correct the odometer reading and head to 0,0 */
 	public void localize()  throws OdometerExceptions {
 		findLineAhead(true);
-		Delay.msDelay(3000);
+		Delay.msDelay(2000);
 		findLineAhead(false);
+		Delay.msDelay(2000);
+		beforeTunnel();
+		Delay.msDelay(1000);
 	}
 public static void beforeTunnel() {
 	
 	int foundLeft = 0;
 	int foundRight = 0;
 
-
+	//leftMotor.setAcceleration(300);
+	//rightMotor.setAcceleration(300);
+	Delay.msDelay(2000);
+	
 	leftMotor.forward();
 	rightMotor.forward();
-
+	
 	while(true) {
 		// Get color sensor readings
 		sample1.fetchSample(colorData, 0); // acquire data
@@ -81,6 +87,7 @@ public static void beforeTunnel() {
 
 		// If line detected for left sensor (intensity less than 0.3), only count once by keeping track of last value
 		if((colorData[0]) < 0.27 && oldSampleLeft > 0.27 && foundLeft == 0) {
+			
 			leftMotor.stop(true);
 			foundLeft++;
 		}
@@ -99,11 +106,12 @@ public static void beforeTunnel() {
 			break;
 		}
 	}
-
+	//leftMotor.setAcceleration(300);
+	//rightMotor.setAcceleration(300);
 	// Move forward by length of offset
 	navigation.move(dist, false);
-	leftMotor.setAcceleration(500);
-	rightMotor.setAcceleration(500);
+	//leftMotor.setAcceleration(300);
+	//rightMotor.setAcceleration(300);
 	
 	
 	
@@ -112,6 +120,10 @@ public static void beforeTunnel() {
 	
 	
 	public static void findLineAhead(Boolean first) throws OdometerExceptions {
+		rightMotor.setSpeed(150);
+		leftMotor.setSpeed(150);
+		
+		
 		// Track how many lines found by left and right sensor
 		int foundLeft = 0;
 		int foundRight = 0;
